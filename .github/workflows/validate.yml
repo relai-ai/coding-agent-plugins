@@ -1,0 +1,26 @@
+name: Validate plugin release
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-overlay:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate provenance and generated contents
+        run: python3 scripts/validate_release.py --root .
+      - name: Validate Copilot skills
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh version
+          gh skill publish copilot --dry-run
