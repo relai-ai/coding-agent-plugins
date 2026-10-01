@@ -11,8 +11,6 @@ on:
       - .agents/**
       - .claude-plugin/**
       - .cursor-plugin/**
-  workflow_dispatch:
-
 permissions:
   contents: write
 
