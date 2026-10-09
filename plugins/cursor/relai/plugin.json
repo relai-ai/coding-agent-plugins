@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "author": {
+    "name": "RELAI"
+  },
+  "description": "RELAI CLI guidance for coding agents",
+  "name": "relai",
+  "version": "0.2.9"
+}

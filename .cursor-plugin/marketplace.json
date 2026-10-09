@@ -1,0 +1,11 @@
+{
+  "description": "RELAI coding-agent plugins",
+  "name": "relai-cursor",
+  "plugins": [
+    {
+      "name": "relai",
+      "source": "./plugins/cursor/relai",
+      "version": "0.2.9"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "description": "RELAI coding-agent plugins",
+  "name": "relai-claude",
+  "owner": {
+    "name": "RELAI"
+  },
+  "plugins": [
+    {
+      "author": {
+        "name": "RELAI"
+      },
+      "category": "Productivity",
+      "description": "RELAI CLI guidance for Claude Code agents",
+      "name": "relai",
+      "source": "./plugins/claude/relai",
+      "version": "0.2.9"
+    }
+  ]
+}
