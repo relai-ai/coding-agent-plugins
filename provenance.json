@@ -1,0 +1,364 @@
+{
+  "format": "relai.plugin_export.v1",
+  "release_version": "0.2.9",
+  "source_revision": "53923638463f7ea5718246f5cf72c034b6d90c9c",
+  "export_format_version": 1,
+  "package_digest": "9abb23f5ed05315ecd09aea0ba0d24e7e1d5825022240ed67f097f06276f8cbc",
+  "inventory": [
+    {
+      "path": ".agents/plugins/marketplace.json",
+      "byte_size": 362,
+      "sha256": "e3b98548f5ddea4bcf7185a1ee2611ac81e6a2aff21b18b94e6b4ecfee5af473"
+    },
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "byte_size": 387,
+      "sha256": "890d89170c6a81cc6ccac5a44a9acb275f40cdd6e55cc1e73bd0aa4cf4980341"
+    },
+    {
+      "path": ".cursor-plugin/marketplace.json",
+      "byte_size": 198,
+      "sha256": "8411b23b59fc6eef885a491b86bbd50af946f5da1cf09ec92fa297ee98b74f93"
+    },
+    {
+      "path": "artifacts/relai-openai-v0.2.9.zip",
+      "byte_size": 186870,
+      "sha256": "0ab70e689b1b7362bc01269ad41e34e6ea4f4e41ef276c5d509ce5ce11e41c52"
+    },
+    {
+      "path": "copilot/skills/relai-agent-test/SKILL.md",
+      "byte_size": 8660,
+      "sha256": "4c63e339169221cfa004ab7c34895abeed59abe3c4765744c62b72e68e68147b"
+    },
+    {
+      "path": "copilot/skills/relai-agent-test/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "copilot/skills/relai-benchmark/SKILL.md",
+      "byte_size": 1538,
+      "sha256": "24e75f28352ae1b6c441fbf4f7556473a0eba09005568067c7daba930a35d521"
+    },
+    {
+      "path": "copilot/skills/relai-cli/SKILL.md",
+      "byte_size": 10307,
+      "sha256": "021cade2bba2e03bb269923a0d392392d5f2a1cd32136874babd385163306afd"
+    },
+    {
+      "path": "copilot/skills/relai-cli/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "copilot/skills/relai-ingest/SKILL.md",
+      "byte_size": 1565,
+      "sha256": "4c67168c35edd81571607081e64f6bea8b9574a60bc4b1d5b50bf85c1ffe974b"
+    },
+    {
+      "path": "copilot/skills/relai-ingest/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "copilot/skills/relai-optimize/SKILL.md",
+      "byte_size": 4637,
+      "sha256": "e0bb48a3d1ec98ff84dc5346be5abad6110bbd3662df2b42b85aec88ba10e7a5"
+    },
+    {
+      "path": "copilot/skills/relai-overview/SKILL.md",
+      "byte_size": 1122,
+      "sha256": "4d1db987bcd84e794744309fe56bd5c9007df163c048d525314d7dc8e76895dc"
+    },
+    {
+      "path": "copilot/skills/relai-overview/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "copilot/skills/relai-simulate/SKILL.md",
+      "byte_size": 6043,
+      "sha256": "b1d65e2e9b33bbb65f90e574edba4bcb7c571d9b68ec15a7a96efb254d453120"
+    },
+    {
+      "path": "copilot/skills/relai-simulate/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "copilot/skills/relai-simulate/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "copilot/skills/relai-wiki/SKILL.md",
+      "byte_size": 3643,
+      "sha256": "bc0e8124573c84b62a231d3b541989eb216d5b8ecba5f015155cd04ff4a35e76"
+    },
+    {
+      "path": "copilot/skills/relai-wiki/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "copilot/skills/relai-wiki/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/claude/relai/.claude-plugin/plugin.json",
+      "byte_size": 300,
+      "sha256": "83d5abb7053cd12010bc30fea2628b25883bd4ba324d9e5dd258223f4f75543a"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-agent-test/SKILL.md",
+      "byte_size": 8693,
+      "sha256": "c819bca75f1f1465dda308e07b3420f7aaf15af6bec6b334dab2cecf7bd039f7"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-agent-test/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-benchmark/SKILL.md",
+      "byte_size": 1538,
+      "sha256": "24e75f28352ae1b6c441fbf4f7556473a0eba09005568067c7daba930a35d521"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-cli/SKILL.md",
+      "byte_size": 10340,
+      "sha256": "1c65fd92ad30e8c7e9aef4dad212aff99e1e2822372e1c7c76a6c80d086e8dd8"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-cli/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-ingest/SKILL.md",
+      "byte_size": 1565,
+      "sha256": "4c67168c35edd81571607081e64f6bea8b9574a60bc4b1d5b50bf85c1ffe974b"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-ingest/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-optimize/SKILL.md",
+      "byte_size": 4637,
+      "sha256": "e0bb48a3d1ec98ff84dc5346be5abad6110bbd3662df2b42b85aec88ba10e7a5"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-overview/SKILL.md",
+      "byte_size": 1122,
+      "sha256": "4d1db987bcd84e794744309fe56bd5c9007df163c048d525314d7dc8e76895dc"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-overview/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-simulate/SKILL.md",
+      "byte_size": 6043,
+      "sha256": "b1d65e2e9b33bbb65f90e574edba4bcb7c571d9b68ec15a7a96efb254d453120"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-simulate/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-simulate/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-wiki/SKILL.md",
+      "byte_size": 3643,
+      "sha256": "bc0e8124573c84b62a231d3b541989eb216d5b8ecba5f015155cd04ff4a35e76"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-wiki/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/claude/relai/skills/relai-wiki/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/codex/relai/.codex-plugin/plugin.json",
+      "byte_size": 733,
+      "sha256": "a9c3ed208de5b2636f07d4b076499a6db6cba6b2f40e415aae10481fe594758b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-agent-test/SKILL.md",
+      "byte_size": 8784,
+      "sha256": "0bf6c6774b4d1e398bff38ec3d4fa5ce1cb122d7e0f25cefc482c7dbfafd182e"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-agent-test/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-benchmark/SKILL.md",
+      "byte_size": 1538,
+      "sha256": "24e75f28352ae1b6c441fbf4f7556473a0eba09005568067c7daba930a35d521"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-cli/SKILL.md",
+      "byte_size": 10431,
+      "sha256": "c18abe8d2c7678c981db36c942c2ae81a66a849ecc0a706fc31def6445826b8b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-cli/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-ingest/SKILL.md",
+      "byte_size": 1565,
+      "sha256": "4c67168c35edd81571607081e64f6bea8b9574a60bc4b1d5b50bf85c1ffe974b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-ingest/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-optimize/SKILL.md",
+      "byte_size": 4637,
+      "sha256": "e0bb48a3d1ec98ff84dc5346be5abad6110bbd3662df2b42b85aec88ba10e7a5"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-overview/SKILL.md",
+      "byte_size": 1122,
+      "sha256": "4d1db987bcd84e794744309fe56bd5c9007df163c048d525314d7dc8e76895dc"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-overview/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-simulate/SKILL.md",
+      "byte_size": 6043,
+      "sha256": "b1d65e2e9b33bbb65f90e574edba4bcb7c571d9b68ec15a7a96efb254d453120"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-simulate/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-simulate/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-wiki/SKILL.md",
+      "byte_size": 3643,
+      "sha256": "bc0e8124573c84b62a231d3b541989eb216d5b8ecba5f015155cd04ff4a35e76"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-wiki/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/codex/relai/skills/relai-wiki/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/cursor/relai/plugin.json",
+      "byte_size": 215,
+      "sha256": "6d9ee20139c4b4cd6ace78df532e9ae253b2117573e548aaf94a2ad56e87f43f"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-agent-test/SKILL.md",
+      "byte_size": 8597,
+      "sha256": "dc7209f0d2cc58e08e9d811f5898becffb5e7d80cde54a055aaf2297487a3584"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-agent-test/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-benchmark/SKILL.md",
+      "byte_size": 1538,
+      "sha256": "24e75f28352ae1b6c441fbf4f7556473a0eba09005568067c7daba930a35d521"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-cli/SKILL.md",
+      "byte_size": 10244,
+      "sha256": "1e0dda73137a1b6de7892e47b554be2877b6bde9f1a1a3ff1143f9169ad3483a"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-cli/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-ingest/SKILL.md",
+      "byte_size": 1565,
+      "sha256": "4c67168c35edd81571607081e64f6bea8b9574a60bc4b1d5b50bf85c1ffe974b"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-ingest/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-optimize/SKILL.md",
+      "byte_size": 4637,
+      "sha256": "e0bb48a3d1ec98ff84dc5346be5abad6110bbd3662df2b42b85aec88ba10e7a5"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-overview/SKILL.md",
+      "byte_size": 1122,
+      "sha256": "4d1db987bcd84e794744309fe56bd5c9007df163c048d525314d7dc8e76895dc"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-overview/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-simulate/SKILL.md",
+      "byte_size": 6043,
+      "sha256": "b1d65e2e9b33bbb65f90e574edba4bcb7c571d9b68ec15a7a96efb254d453120"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-simulate/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-simulate/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-wiki/SKILL.md",
+      "byte_size": 3643,
+      "sha256": "bc0e8124573c84b62a231d3b541989eb216d5b8ecba5f015155cd04ff4a35e76"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-wiki/references/proactive-decision-policy.md",
+      "byte_size": 4061,
+      "sha256": "eb105d6a7cba5f8118e47ac8b05e6b030f3f1df981509dd0f7ce522fbcecc725"
+    },
+    {
+      "path": "plugins/cursor/relai/skills/relai-wiki/references/relai-cli-commands.md",
+      "byte_size": 32301,
+      "sha256": "371fea817326949c9e2e1e29c44870b328355489549edcc5a4f1a5e1f25d617b"
+    }
+  ]
+}

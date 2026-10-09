@@ -1,0 +1,17 @@
+{
+  "author": {
+    "name": "RELAI"
+  },
+  "description": "RELAI CLI guidance for Claude Code agents",
+  "displayName": "RELAI CLI",
+  "keywords": [
+    "relai",
+    "cli",
+    "simulation",
+    "evaluation",
+    "optimization"
+  ],
+  "name": "relai",
+  "skills": "./skills/",
+  "version": "0.2.9"
+}

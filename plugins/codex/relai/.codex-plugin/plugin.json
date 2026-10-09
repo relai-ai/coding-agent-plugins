@@ -1,0 +1,23 @@
+{
+  "author": {
+    "name": "RELAI"
+  },
+  "description": "RELAI CLI guidance for coding agents",
+  "interface": {
+    "capabilities": [
+      "CLI workflows",
+      "Agent simulation",
+      "Evaluation",
+      "Optimization"
+    ],
+    "category": "Productivity",
+    "defaultPrompt": "Use RELAI to simulate and improve this agent.",
+    "developerName": "RELAI",
+    "displayName": "RELAI CLI",
+    "longDescription": "Codex-facing instructions for setup, triage, simulation, evaluation, agent tests, benchmarks, optimizer workflows, uploads, memory, tags, and other public RELAI CLI commands.",
+    "shortDescription": "Use RELAI CLI workflows from Codex."
+  },
+  "name": "relai",
+  "skills": "./skills/",
+  "version": "0.2.9"
+}

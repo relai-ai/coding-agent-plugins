@@ -1,0 +1,20 @@
+{
+  "interface": {
+    "displayName": "RELAI"
+  },
+  "name": "relai-codex",
+  "plugins": [
+    {
+      "category": "Productivity",
+      "name": "relai",
+      "policy": {
+        "authentication": "ON_INSTALL",
+        "installation": "AVAILABLE"
+      },
+      "source": {
+        "path": "./plugins/codex/relai",
+        "source": "local"
+      }
+    }
+  ]
+}
