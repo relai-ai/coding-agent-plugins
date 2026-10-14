@@ -17,7 +17,10 @@ Prefer an agent test instead when the issue is one concrete observed failure or 
 
 Before registering a benchmark:
 
-- Check that the CSV shape is intentional.
+- Check that the CSV shape is intentional and has no data rows without values;
+  registration refuses them because each data row becomes one sample.
+- Pass an evaluator the user wants applied with `--evaluator-ref`; it must be a
+  file inside the repository, so copy an external evaluator in first.
 - In a multi-target repository, identify the intended registered target before registering the benchmark.
 - Do not search, dump, or edit the Wiki yourself; the benchmark workflow reads its own grounding.
 - Use `relai benchmark register --help` through the `relai-cli` skill before constructing the command.

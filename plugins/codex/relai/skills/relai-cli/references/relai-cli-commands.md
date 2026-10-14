@@ -17,7 +17,7 @@ the marker use the corresponding path directly under `.relai/`.
 
 ## Project instructions for RELAI
 
-RELAI's workflow agents (init, ingest, agent tests, benchmarks, evaluators, EvalsWiki updates, and simulator repair) follow instructions the repository writes for RELAI. Agent Optimizer's backend planning and review do not receive them.
+RELAI's workflow agents (init, ingest, agent tests, benchmarks, evaluators, EvalsWiki updates, and simulator repair) and Agent Optimizer follow instructions the repository writes for RELAI. Agent Optimizer receives them after the run's own custom instructions, within its 48,000-character limit, and a cut names the file to read for the rest.
 
 - Sources, ordered from the repository root to the working directory: the section under a heading named exactly `RELAI` (any level, until the next heading of the same or a higher level) in each `AGENTS.md`, then each whole `RELAI.md`. `CLAUDE.md` is never a source, and RELAI's managed policy block is ignored.
 - Use them for how RELAI should operate in this repository: datasets to use or avoid, the evaluator or scoring contract, files RELAI must not change, how to confirm a failure, and commands to run. Target-agent behavior belongs in the EvalsWiki; coding-agent guidance stays outside the `RELAI` section.
@@ -35,11 +35,11 @@ RELAI's workflow agents (init, ingest, agent tests, benchmarks, evaluators, Eval
 
 ## Public command map
 
-`relai auth`, `relai auth status`, `relai auth login`, `relai auth logout`, `relai setup`, `relai update`, `relai uninstall`, `relai init`, `relai simulate`, `relai optimize`, `relai ingest`, `relai memory`, `relai wiki`, `relai tag`, `relai benchmark`, `relai test`, `relai test discover`, `relai evaluator`, `relai plugins`, `relai policy`, and `relai completions` are the visible release command surface. Use `relai --version` to print the installed binary identity.
+`relai auth`, `relai auth status`, `relai auth login`, `relai auth logout`, `relai setup`, `relai update`, `relai uninstall`, `relai init`, `relai simulate`, `relai optimize`, `relai ingest`, `relai memory`, `relai wiki`, `relai tag`, `relai benchmark`, `relai test`, `relai test discover`, `relai evaluator`, `relai plugins`, `relai policy`, `relai runs`, and `relai completions` are the visible release command surface. Use `relai --version` to print the installed binary identity.
 
 ### `relai policy`
 
-Install or remove RELAI's shared proactive workflow policy in existing regular repository-root `AGENTS.md` and `CLAUDE.md` files. The command skips symlinks without following them, never creates instruction files, and never recurses into nested files. Both actions fail if no regular root instruction file exists. After `relai init` succeeds, the coding agent runs `relai policy install` without asking when an existing regular root instruction file lacks the current managed policy marker. `install` validates every existing target before changing any of them; `remove` only removes RELAI's complete managed block.
+Install or remove RELAI's shared proactive workflow policy in existing regular repository-root `AGENTS.md` and `CLAUDE.md` files. The policy tells coding agents when a change calls for RELAI work (an EvalsWiki note, reusing or adding agent tests or evaluators, or a focused simulation) and when ordinary implementation is enough. The command skips symlinks without following them, never creates instruction files, and never recurses into nested files. Both actions fail if no regular root instruction file exists. After `relai init` succeeds, the coding agent runs `relai policy install` without asking when an existing regular root instruction file lacks the current managed policy marker, then tells the user in one line which files gained that guidance and that `relai policy remove` undoes it. `install` validates every existing target before changing any of them; `remove` only removes RELAI's complete managed block.
 
 ```sh
 relai policy install
@@ -165,8 +165,8 @@ relai init --agent-target support-agent --permissions ask
 relai init --bare
 ```
 
-Machine-level setup authentication is used by default. OAuth credentials remain
-in OS secure storage. Harbor task images and project adapters own runtime
+Machine-level setup authentication is used by default. OAuth credentials are
+stored in the user-only file `~/.relai/credentials.json`. Harbor task images and project adapters own runtime
 dependencies; init never forwards OAuth credentials to project code.
 
 `relai init` initializes the Harbor simulator runtime in `.relai/harbor/`.
@@ -180,23 +180,34 @@ the full catalog and runner contract.
 
 ### Coding-agent interaction mode
 
-Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v1` protocol when run with that flag. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip`, where a free-form answer is revision feedback, and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`. `optimize` is terminal-only; run it without `--agent-interaction` and preserve its terminal completion report.
+Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v1` protocol when run with that flag, and report progress on stderr as `relai.progress.v1` JSON lines (`phase`, `activity`, `milestone`, `test_ready`, `heartbeat`, then a final `paused` or `finished`). `simulate` also accepts the flag for progress (`test_started` and `test_finished` per run) and one `completed` or `failed` completion document naming its outcome; it never pauses for a response. `optimize` accepts it for one approval pause before any rollout, progress (`rollout_finished` per simulation and `step_finished` per optimization step), and one `completed` or `failed` completion document. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip`, where a free-form answer is revision feedback, and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`.
 
 ```sh
 relai init --agent-interaction
 relai init --resume --agent-interaction --interaction-response '{"schema_version":"relai.agent_interaction.v1","session_id":"SESSION","request_id":"REQUEST","answer":"ANSWER"}'
 ```
 
+### `relai runs`
+
+On macOS and Linux, every `--agent-interaction` invocation runs as a background run that outlives the shell call, and waits for it up to `--wait` (default `90s`; `0s` returns once it has started). A run that finishes in time reports exactly as a foreground run. A run still going prints a `running` document (`relai.agent_interaction.v1` with `status: "running"`, `run_id`, `log_offset`, `wait_argv`, `cancel_argv`, and the `latest_progress` event) and exits `75`. `relai runs wait <run-id> --log-offset <n>`, the document's `wait_argv`, waits again, relaying on stderr every progress event written since the previous relay (always use the newest `running` document's `wait_argv`), and once the run finishes prints its stdout document and exits with its exit status (`3` for a question); `--wait` has no maximum, so a long one such as `24h` returns only when the run pauses for a question or ends; `relai runs status <run-id>` reports without waiting, `relai runs logs <run-id>` prints the whole stderr log, `relai runs cancel <run-id>` interrupts the run as Ctrl-C would and waits like `wait` (repeating it only waits; `--force` stops the run at once, skipping cleanup), and `relai runs list` lists the project's runs. Run them from the project directory. If a run's supervisor is killed, its command stops at its last checkpoint and the run is `lost` (exit `1`); resume a resumable workflow as usual.
+
+```sh
+relai runs wait <run-id>
+relai runs cancel <run-id>
+relai runs list
+```
+
 ## Simulation and optimization
 
 ### `relai simulate`
 
-Measure selected agent tests, tags, benchmarks, custom adapter tasks, or one explicit Harbor task. At least one selector is required; selectors may be repeated or comma-separated. Use `--max-simulations` after selection/deduplication, `--shuffle` and optional `--shuffle-seed` for execution order, and `--result-json` for the suite result contract. Every completed run also saves its result under the CLI-managed `runs/results/` directory. For Harbor runs, `--outcome-json` writes the stable `relai.agent_simulation_outcome.v1` integration contract for completed, partial, and terminal failures. Simulation results stay local. Run the selected simulation and its automatic repairs without asking for confirmation.
+Measure selected agent tests, tags, benchmarks, custom adapter tasks, or one explicit Harbor task. At least one selector is required; selectors may be repeated or comma-separated. Use `--max-simulations` after selection/deduplication, `--shuffle` and optional `--shuffle-seed` for execution order, and `--result-json` for the suite result contract. Every completed run also saves its result under the CLI-managed `runs/results/` directory. Simulation results stay local. Run the selected simulation and its automatic repairs without asking for confirmation. Pass `--agent-interaction` for `relai.progress.v1` progress on stderr (`test_started`, then `test_finished` with `status` and evaluator `scores`, for each run) and one stdout completion document; simulation never pauses for questions, so it takes no `--interaction-response`. For Harbor runs, that document names `outcome_path`, the stable `relai.agent_simulation_outcome.v1` receipt for completed, partial, and terminal failures, which the CLI writes to a fresh path in its runs directory.
 
 ```sh
 relai simulate --tests example
+relai simulate --tests example --agent-interaction
 relai simulate --tests env-a,env-b --result-json .relai/.internal/runs/results.json
-relai simulate --tags regression --outcome-json .relai/.internal/runs/outcome.json --outcome-invocation-id <UUID> --outcome-intent verify-policy
+relai simulate --tags regression --agent-interaction --outcome-intent verify-policy
 relai simulate --tags regression --shuffle --shuffle-seed 7
 relai simulate --benchmarks support-suite --max-simulations 5
 relai simulate --harbor-task path/to/task --timeout 45m
@@ -209,23 +220,27 @@ selectors or `--retry-from-outcome`. `--env-file` and `--env`
 work with every selector.
 Custom selectors use `ADAPTER::ID` or `ADAPTER::TAG`, including an exact
 `ADAPTER::*` wildcard. They may be mixed with explicit Harbor selectors.
-Custom runs use `--result-json` and saved per-run results. `--outcome-json`,
+Custom runs use `--result-json` and saved per-run results. Outcome receipts,
 `--retry-from-outcome`, and `--harbor-task` are Harbor-only. Read
 `references/custom-adapter-contract.md` before creating an adapter.
 
 The terminal summary groups completed runs by agent test and lists
 each evaluator score and evaluator error. It is human-readable only; use the
-result or outcome JSON when another program needs to consume a simulation.
+result JSON or the `--agent-interaction` document and outcome receipt when
+another program needs to consume a simulation.
 
 Users add required runtime variables to the local `.relai/simulator.env` file; RELAI loads it automatically for simulation and optimization, and the values persist across local runs. Use the shell environment for temporary runs or CI. Use repeated `--env-file PATH` for an alternate file or `--env KEY=VALUE` for an invocation-specific override. `relai init` seeds that file with empty placeholders for the declared names, so the user only fills in values. Tell the user which variable names are missing; do not create, open, or edit the file for them, and do not put secret values in chat or command history.
-When an agent consumes a Harbor result, read and summarize the outcome JSON instead of parsing terminal prose. For custom results, read the suite JSON. `--outcome-json` requires a caller-supplied opaque `--outcome-invocation-id`; reject a stale artifact whose ID does not match. The outcome distinguishes valid low scores from evaluator errors, simulator/runtime and environment/configuration failures, and publication failures, and lists each run's local artifacts, including its ATIF trajectory. Each evaluator error carries a structured `repair_decision`, and `--retry-from-outcome <initial>` reruns the recorded selection once after an evaluator repair; the `relai-simulate` skill describes when to use them. `--outcome-change` and `--outcome-intent` accept caller-supplied attribution.
+When an agent consumes a Harbor result, read the stdout document's `outcome_path` and summarize that outcome instead of parsing terminal prose; once the simulation starts, the document exists on exit 1 too, with status `failed`. For custom results, read the document's summary or the suite JSON. The outcome distinguishes valid low scores from evaluator errors, unscored runs (no evaluator scored them; `next_actions` includes `review_unscored_runs`), simulator/runtime and environment/configuration failures, and publication failures, carries each score's evaluator `feedback` when the evaluator gave one, and lists each run's local artifacts, including its ATIF trajectory and saved per-run result. Each evaluator error carries a structured `repair_decision`, and `--retry-from-outcome <initial> --agent-interaction` reruns the recorded selection once after an evaluator repair; the `relai-simulate` skill describes when to use them. `--outcome-change` and `--outcome-intent` accept caller-supplied attribution.
 
 ### `relai optimize`
 
-Optimize one selected target using agent tests, tags, benchmarks, or custom adapter tasks. Harbor uses available task packages and registered CSV benchmark samples with native ATIF evidence; a custom adapter runs its own project-owned task runner. Without selectors, it uses all available agent tests and registered benchmark samples. In a multi-target repository, `--agent-target` is required. It needs an optimizer scope saved by an interactive run; without a terminal and with no saved scope it stops and says to run `relai optimize` interactively once. It may create commits in an optimizer worktree.
+Optimize one selected target using agent tests, tags, benchmarks, or custom adapter tasks. Harbor uses available task packages and registered CSV benchmark samples with native ATIF evidence; a custom adapter runs its own project-owned task runner. Without selectors, it uses all available agent tests and registered benchmark samples. In a multi-target repository, `--agent-target` is required. It may create commits in an optimizer worktree.
+
+From a coding agent, run it with `--agent-interaction`. It never prompts in a terminal and neither reads nor changes the saved optimizer scope: the scope is the default (structural changes allowed, current models fixed, no new paid tools, cost optimization disabled, no instructions) with these flags applied, each requiring `--agent-interaction`: `--allowed-changes prompt-and-config|structural`, `--allowed-models MODEL,...` (allows switching to only those models), `--allow-paid-tools`, `--cost-optimization disabled|conservative|balanced|aggressive`, and `--scope-instructions TEXT`. Pass only the flags the user's request calls for. The first invocation exits `3` with one `approval` request summarizing the selection, scope, rollout budget, and delivery; present it with the native question tool and resume with `resume_argv` plus `--interaction-response`. To change the scope or budget, take the user's `decline`, then re-run with changed flags for a fresh request; a response never applies to a changed command. Without a terminal or `--agent-interaction`, it needs an optimizer scope saved by an interactive run and otherwise stops and says to run `relai optimize` interactively once.
 
 ```sh
 relai optimize --tests example --no-pr
+relai optimize --tests example --no-pr --allowed-changes prompt-and-config --agent-interaction
 relai optimize --tags regression --env-file .relai/simulator.env --total-rollouts 50
 relai optimize --benchmarks support-suite --agent-target support-agent --batch-size 2
 relai optimize --tests example --pr-base main --timeout 45m
@@ -237,9 +252,9 @@ may be mixed in. `--skip-final-eval` uses the full rollout budget for
 optimization and omits final before/after scores. Its minimum rollout count
 is `2 * batch-size`. `--result-json` writes the structured optimizer result.
 
-`--seed-tests` provides warm-start agent tests. `--total-rollouts`, `--batch-size`, and `--early-stop` control the run. `--total-rollouts` has no fixed maximum and must be at least `6 * batch-size` by default or `2 * batch-size` with `--skip-final-eval`; RELAI asks to confirm more than 50 total rollouts interactively and warns about them non-interactively. `--no-pr` keeps accepted changes on the local optimizer branch; otherwise a configured GitHub CLI may push and open a PR. Pass `--no-pr` unless the user asked for a pull request. `--pr-base` must already exist on `origin`.
+`--seed-tests` provides warm-start agent tests. `--total-rollouts`, `--batch-size`, and `--early-stop` control the run. `--total-rollouts` has no fixed maximum and must be at least `6 * batch-size` by default or `2 * batch-size` with `--skip-final-eval`; RELAI asks to confirm more than 50 total rollouts interactively, warns about them non-interactively, and names them in the `--agent-interaction` approval. `--no-pr` keeps accepted changes on the local optimizer branch; otherwise a configured GitHub CLI may push and open a PR. Pass `--no-pr` unless the user asked for a pull request. `--pr-base` must already exist on `origin`. `--no-commit` (or `[optimize] commit = false` in `.relai/config.toml`) creates no Git commits, so repository commit hooks never run: accepted changes stay staged in the optimizer worktree and RELAI's changes alone are written to `.relai/runs/optimizer/{run-id}/changes.patch`, which the summary shows how to `git apply`; it implies `--no-pr`. Use it when the repository's hooks or signing setup reject RELAI's commits; the commit error names both options.
 
-RELAI copies the live checkout without changing its files, index, or `HEAD`. It commits publishable pre-existing code changes as a before-optimization baseline, then commits accepted optimizer changes separately. Warn the user that an automatic PR includes both commits. `.relai` state, explicit runtime env inputs, credentials, dependency-setup outputs, generated reports, and Git-ignored private files remain uncommitted. No accepted publishable optimizer diff means no automatic PR, though a baseline branch may remain locally.
+RELAI copies the live checkout without changing its files, index, or `HEAD`. It commits publishable pre-existing code changes as a before-optimization baseline, then commits accepted optimizer changes separately. Warn the user that an automatic PR includes both commits. `.relai` state, explicit runtime env inputs, credentials, dependency-setup outputs, generated reports, and Git-ignored private files remain uncommitted. No accepted publishable optimizer diff means no automatic PR, though a baseline branch may remain locally. With `--no-commit` or `[optimize] commit = false`, RELAI creates neither commit and opens no PR; the patch holds only its accepted changes.
 
 An unfinished update session for a selected test blocks startup. If a Harbor runtime or test repair pauses, is cancelled, or fails during a rollout, the optimizer stops and reports the cause, session path when present, and recovery command. Preserve accepted changes, but treat final validation as incomplete; resume a remaining session in the reported worktree or fix the cause, then start a fresh optimization run from the repaired project.
 
@@ -470,7 +485,7 @@ relai evaluator remove --id support-policy
 
 ### `relai benchmark`
 
-Register, update, list, or remove CSV-backed benchmarks. Registration and updates are local agentic workflows with EvalsWiki grounding; inspect the CSV and working tree first. `--evaluator-ref` may be repeated. Confirm with the user before `remove`; it deletes the benchmark.
+Register, update, list, or remove CSV-backed benchmarks. Registration and updates are local agentic workflows with EvalsWiki grounding; inspect the CSV and working tree first. `--evaluator-ref` may be repeated; each must be a file inside the repository, and the benchmark's scoring must apply the evaluation it defines. Registration validation runs the first and last CSV rows and requires an evaluator score from each; the completion summary reports the sample count. Confirm with the user before `remove`; it deletes the benchmark.
 
 ```sh
 relai benchmark register --csv data.csv --name support-suite

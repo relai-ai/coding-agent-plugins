@@ -19,9 +19,10 @@ Prefer direct implementation first when the root cause is a deterministic code b
 Before optimizing:
 
 - Inspect current git state. If publishable code changes are present, tell the user that RELAI will include them in a separate before-optimization commit and in any resulting pull request. Local `.relai` state and private runtime inputs remain uncommitted.
-- When the user asked for optimization, run it without further confirmation; a rollout count or batch size they gave is approved. When you decide on your own that optimization is warranted, confirm once with the user first, stating the selectors, total rollouts, and whether the result stays local.
+- Run `relai optimize --agent-interaction`. RELAI asks the user to approve the selected tests, scope, rollout budget, start commit, and any uncommitted changes it will commit before any rollout, so do not ask for the same confirmation in chat first. Pass a rollout count or batch size the user gave; otherwise RELAI's default budget appears in the approval.
 - Pass `--no-pr` unless the user asked for a pull request; opening a PR pushes to the remote.
-- Optimization runs without a terminal from a coding agent, so it needs an optimizer scope already saved by an interactive `relai optimize` run. When the CLI says to run `relai optimize` interactively (no saved scope, or an invalid one), relay that instruction to the user.
+- The scope comes only from flags over RELAI's default (structural changes allowed, current models fixed, no new paid tools, cost optimization disabled); a scope saved by an interactive run is not used. Pass only what the user asked for: `--allowed-changes prompt-and-config` for a prompt/config-only pass, `--allowed-models MODEL,...` when model switches are acceptable, `--allow-paid-tools`, `--cost-optimization conservative|balanced|aggressive`, and `--scope-instructions TEXT` for their preferences.
+- Present the exit `3` approval request with your native question tool and resume with its `resume_argv` plus `--interaction-response`. When the user wants a different scope or budget, send `decline`, then re-run with the changed flags for a fresh request; never reuse an earlier response.
 - Use the `relai-cli` skill and command reference before running `relai optimize`.
 - For custom adapter tasks, read `references/custom-adapter-contract.md` and
   use `--custom-tests ADAPTER::ID` or `--custom-tags ADAPTER::TAG`. If
@@ -33,8 +34,17 @@ Task, evaluator, and benchmark fixtures are not optimizer code-edit targets.
 RELAI copies the live checkout without changing its files, index, or `HEAD`. It
 commits eligible pre-existing code first and accepted optimizer changes second.
 An automatic PR requires that second commit; a baseline-only branch remains local.
+After a committed delivery RELAI removes its worktree, so the branch can be
+checked out. It keeps the worktree with `--no-commit` (the changes stay staged
+there, with a patch) and when the summary has a `Worktree` item naming why: an
+unfinished repair, uncommitted publishable changes, a timeout, or a failed
+removal. Then the branch is still checked out in that worktree. Resume a repair
+there; otherwise the item gives the `git worktree remove` command to run before
+switching to the branch.
 
-`relai optimize` is terminal-only. After it completes, preserve RELAI's final terminal report. Its local artifacts are under `.relai/.internal/runs/optimizer/<run-id>/` (in the CLI-managed runs directory):
+Run the approved resume without blocking the conversation, as the `relai-cli` skill's long-running command guidance describes. While it runs, relay its `relai.progress.v1` progress: each phase and each optimization step's outcome (`step_finished`). A run takes minutes to hours; RELAI cannot be asked to stop early after the current step from a coding agent, and cancelling it stops immediately.
+
+When it completes, present the completion document's `summary.agent_response_markdown` as RELAI's report. `result_path` names `optimizer-result.json`; the local artifacts beside it are under `.relai/.internal/runs/optimizer/<run-id>/` (in the CLI-managed runs directory):
 
 - `optimization-report.json` for RELAI's concise optimizer report.
 - `pr-summary.json` for each accepted change (`accepted_turns`) with its title, diagnosis, and change summary.
