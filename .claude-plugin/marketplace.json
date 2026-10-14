@@ -13,7 +13,7 @@
       "description": "RELAI CLI guidance for Claude Code agents",
       "name": "relai",
       "source": "./plugins/claude/relai",
-      "version": "0.2.9"
+      "version": "0.2.10"
     }
   ]
 }

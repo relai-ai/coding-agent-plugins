@@ -55,7 +55,10 @@ do not treat simulation as a default post-codecheck.
 
 ## Running
 
-Run the selected simulation without asking for confirmation. `relai simulate`
+Run the selected simulation without asking for confirmation. Pass
+`--agent-interaction`, start it without blocking the conversation as the
+`relai-cli` skill's long-running command guidance describes, and relay its
+progress events as the interaction protocol describes. `relai simulate`
 repairs malformed selected artifacts and simulator runtime failures
 automatically within its own bounded retries; do not reimplement either repair
 yourself.
@@ -65,12 +68,13 @@ For custom adapters, read `references/custom-adapter-contract.md`, pass
 JSON plus saved per-run results. Custom runs do not support outcome receipts or
 the Harbor evaluator repair retry flow below.
 
-For Harbor runs, pass `--outcome-json <runs>/simulation-outcome.json --outcome-invocation-id <opaque-id>`,
-where `<runs>` is the project's CLI-managed runs directory (plus bounded
-`--outcome-change` or `--outcome-intent` when useful). After the command exits,
-read and summarize the versioned `relai.agent_simulation_outcome.v1` artifact,
-including terminal failures and partial suites. Do not scrape or parse terminal
-prose: it is human-facing and not the integration contract.
+With `--agent-interaction` (plus bounded `--outcome-change` or
+`--outcome-intent` when useful), stdout carries one completion document, with
+status `completed`, or `failed` on exit 1 once the simulation starts. For Harbor runs, its `outcome_path`
+names the versioned `relai.agent_simulation_outcome.v1` artifact the CLI wrote
+for this invocation: read and summarize it, including terminal failures and
+partial suites. Do not scrape or parse terminal prose: it is human-facing and
+not the integration contract.
 
 ## Results
 
@@ -78,11 +82,20 @@ For each completed run, show what happened before its scores: read the run's
 ATIF trajectory (the `trajectory.json` in that run's `local_artifact_paths`)
 and present it turn by turn, for example `Turn 1 — user: … / agent: …`. Include
 notable tool calls, and summarize long messages instead of quoting them in full.
+Then show each score with its `feedback`, the evaluator's written explanation,
+when the score entry has one. That text is shortened and redacted; when the
+run's `local_artifact_paths` lists a saved `results/` JSON, it holds the full
+result and feedback.
 
 When presenting results, distinguish these outcomes:
 
 - A valid low score is behavioral evidence, not a simulator failure or a reason
   to retry/repair automatically.
+- A completed run with no scores and no evaluator errors is unscored: it has
+  no verdict, so never report it as passing. Its result metadata carries the
+  task verifier's `task_verifier_exit_status` when the verifier failed; point
+  the user at that trial's `verifier/test-stdout.txt` and at adding or
+  repairing the test's evaluators.
 - Evaluator errors are result-payload warnings. Report them separately; they
   are out of scope for runtime repair. Inspect the
   structured per-error `repair_decision`, never its message. Only one `repairable` grounded local global evaluator is eligible for automatic repair.
@@ -92,9 +105,9 @@ When presenting results, distinguish these outcomes:
   Preserve the initial artifacts and repair without a separate confirmation using
   `relai evaluator update --id <evaluator-id> --prompt <bounded failure context>
   --agent-interaction`; do not mutate evaluator files directly. Then run at
-  most one `relai simulate --retry-from-outcome <initial-outcome>` with
-  distinct `--outcome-json`, `--outcome-invocation-id`, and `--result-json`
-  values. It
+  most one `relai simulate --retry-from-outcome <initial-outcome>
+  --agent-interaction` with a distinct `--result-json`; the retry writes its
+  own new outcome. It
   reuses exactly the initial selector/control/environment-reference contract
   and refuses drift. Report both outcomes. A
   cancelled update or any non-repairable, stale, unavailable, inline,
