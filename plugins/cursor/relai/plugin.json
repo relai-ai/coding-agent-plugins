@@ -3,7 +3,7 @@
   "author": {
     "name": "RELAI"
   },
-  "description": "RELAI CLI guidance for coding agents",
+  "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
   "name": "relai",
-  "version": "0.2.10"
+  "version": "0.2.11"
 }

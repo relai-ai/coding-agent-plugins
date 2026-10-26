@@ -2,7 +2,7 @@
   "author": {
     "name": "RELAI"
   },
-  "description": "RELAI CLI guidance for coding agents",
+  "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
   "interface": {
     "capabilities": [
       "CLI workflows",
@@ -14,10 +14,10 @@
     "defaultPrompt": "Use RELAI to simulate and improve this agent.",
     "developerName": "RELAI",
     "displayName": "RELAI CLI",
-    "longDescription": "Codex-facing instructions for setup, triage, simulation, evaluation, agent tests, benchmarks, optimizer workflows, uploads, memory, tags, and other public RELAI CLI commands.",
-    "shortDescription": "Use RELAI CLI workflows from Codex."
+    "longDescription": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests. The plugin guides Codex through RELAI CLI setup, EvalsWiki, agent tests, benchmarks, simulation, and optimization.",
+    "shortDescription": "Evals and harness optimization for AI agents, delivered as pull requests."
   },
   "name": "relai",
   "skills": "./skills/",
-  "version": "0.2.10"
+  "version": "0.2.11"
 }
