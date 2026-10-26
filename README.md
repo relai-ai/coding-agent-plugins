@@ -14,17 +14,43 @@ before you merge them.
 
 ```text
 /plugin marketplace add relai-ai/coding-agent-plugins
-/plugin install relai@relai-claude
+/plugin install relai@relai
 ```
 
 ### Codex
 
 ```sh
 codex plugin marketplace add relai-ai/coding-agent-plugins
-codex plugin add relai@relai-codex
+codex plugin add relai@relai
 ```
 
 Start a new Codex session to load the skills.
+
+### Added this marketplace before it was renamed?
+
+This marketplace used to be named `relai-claude` for Claude Code and
+`relai-codex` for Codex. Updating it doesn't rename an existing install, so
+remove the old one and add the marketplace again.
+
+In Claude Code:
+
+```text
+/plugin marketplace remove relai-claude
+/plugin marketplace add relai-ai/coding-agent-plugins
+/plugin install relai@relai
+```
+
+For Codex:
+
+```sh
+codex plugin remove relai@relai-codex
+codex plugin marketplace remove relai-codex
+codex plugin marketplace add relai-ai/coding-agent-plugins
+codex plugin add relai@relai
+```
+
+Skip this if you installed the plugin with `relai setup --agent`. On that
+machine, `relai-claude` and `relai-codex` are the RELAI CLI's own marketplaces.
 
 ### Cursor and GitHub Copilot
 
@@ -44,8 +70,13 @@ curl -fsSL https://api.relai.ai/install.sh | bash
 relai auth login
 ```
 
-Do not also run `relai setup --agent` afterwards: it installs a second copy of
-the plugin's skills.
+Don't also install the plugin through the CLI. Skip `relai setup --agent` and
+`relai plugins install`, and answer no when interactive setup, including the
+first-run setup, offers to configure the plugin: a CLI install adds a second
+copy, and your coding agent then loads every RELAI skill twice. To switch to
+the copy the CLI installs, first uninstall this one:
+`/plugin uninstall relai@relai` in Claude Code or
+`codex plugin remove relai@relai` for Codex.
 
 To start from the CLI instead, let setup install the plugin that matches your
 CLI version:
