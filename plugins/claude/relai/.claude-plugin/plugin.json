@@ -2,16 +2,20 @@
   "author": {
     "name": "RELAI"
   },
-  "description": "RELAI CLI guidance for Claude Code agents",
+  "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
   "displayName": "RELAI CLI",
   "keywords": [
     "relai",
     "cli",
+    "ai-agents",
+    "agent-evaluation",
+    "evals",
+    "harbor",
     "simulation",
     "evaluation",
     "optimization"
   ],
   "name": "relai",
   "skills": "./skills/",
-  "version": "0.2.10"
+  "version": "0.2.11"
 }

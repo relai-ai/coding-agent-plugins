@@ -33,6 +33,9 @@ meaningful agent behavior. Do not turn every coding request into RELAI work.
    behavioral regression is reported, or a baseline is needed before a
    behavior-focused change. Do not run broad simulations for ordinary code
    changes.
+   After a direct fix with several plausible existing cases, use
+   `relai regression select` to choose focused checks, then run the selected
+   simulations. Selection alone is not behavioral evidence.
 
 The selected action can include its necessary predecessor: grounded coverage
 creation, and coverage updates driven by new durable intent, require a durable

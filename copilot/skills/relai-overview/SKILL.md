@@ -17,6 +17,14 @@ examples.
 3. Simulate current behavior against those repeatable cases.
 4. Optimize the agent against the selected cases.
 
+Use `relai optimize --fast` for one to three exact samples and a targeted fix;
+use `relai optimize --full` for a broader optimization loop. A fast run keeps
+test and harness assets fixed while measuring the agent change.
+
+For a direct fix, `relai regression select` can choose focused existing
+checks without starting an optimizer run. Run the suggested simulations when
+the changed agent behavior needs measurement.
+
 ## Triage
 
 Apply the decision ladder to the completed conversation and resulting change.

@@ -10,6 +10,9 @@ EvalsWiki. For a bounded decision or correction from the current coding-agent
 conversation, use `relai wiki update` instead. For one run log paired with
 feedback to create an agent test, use `relai test create`.
 
+If `command -v relai` finds nothing, install the CLI as described in "Install
+the CLI" in `references/relai-cli-commands.md` before continuing.
+
 Read `references/relai-cli-commands.md` and inspect `relai ingest --help` for
 the installed CLI. From the project root, confirm `.relai/config.toml` and
 `.relai/evals-wiki/` exist; use `relai wiki bootstrap` if the Wiki is missing.
@@ -23,6 +26,8 @@ durable Wiki or attachment writes.
 
 With `--review`, RELAI pauses before applying Wiki patches. Risk hypothesis
 updates and selected attachments can still be written before patch approval.
+Under `accept_edits` or `ask`, each analysis-script run also pauses for
+approval; the resume keeps the session's permissions profile.
 Present the structured completion report, including changed knowledge and
 remaining questions; show added or updated risks as the table in the command
 reference's "Presenting risks" section. For `action_required`, use the host's native question

@@ -10,10 +10,28 @@
         "name": "RELAI"
       },
       "category": "Productivity",
-      "description": "RELAI CLI guidance for Claude Code agents",
+      "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
       "name": "relai",
+      "relevance": {
+        "signals": {
+          "cli": [
+            "relai",
+            "harbor"
+          ],
+          "filesRead": [
+            "**/.relai/**",
+            "**/task.toml"
+          ],
+          "hosts": [
+            "api.relai.ai",
+            "cli-docs.relai.ai",
+            "platform.relai.ai"
+          ]
+        },
+        "topic": "AI agent evals"
+      },
       "source": "./plugins/claude/relai",
-      "version": "0.2.10"
+      "version": "0.2.11"
     }
   ]
 }

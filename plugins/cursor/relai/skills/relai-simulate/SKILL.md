@@ -9,6 +9,9 @@ Apply `references/proactive-decision-policy.md` and `references/relai-cli-comman
 targeted-measurement rung: run relevant grounded coverage when behavioral
 validation is needed, not as a default for ordinary implementation work.
 
+If `command -v relai` finds nothing, install the CLI as described in "Install
+the CLI" in `references/relai-cli-commands.md` before continuing.
+
 Use RELAI simulation when the goal is to measure current behavior against repeatable cases.
 
 Good fits:
@@ -47,6 +50,10 @@ do not treat simulation as a default post-codecheck.
    `--max-simulations <COUNT>` after resolution and deduplication when it
    bounds a multi-case selector. Do not use a broad tag, shuffle, a full suite,
    or a duplicate run merely because it is convenient.
+   When `relai regression select` supplied a `simulate_argv`, use that exact
+   selector. An individual benchmark row uses
+   `--benchmark-samples 'BENCHMARK_ID#SAMPLE_ID'` and fails if its row identity
+   has changed.
 4. If no applicable grounded coverage exists, or selectors/grounding cannot be
    determined safely, explicitly report the no-run or defer decision and why.
    State whether the next appropriate action is no RELAI action, a separate
@@ -91,6 +98,13 @@ When presenting results, distinguish these outcomes:
 
 - A valid low score is behavioral evidence, not a simulator failure or a reason
   to retry/repair automatically.
+- Any selected run without a result, including the target agent's own crash
+  or agent timeout, makes the command exit 1 with a `failed` document after
+  the batch finishes; report each such run as failed. A host LLM judge that
+  the model proxy refused for sign-in, budget, or usage-cap reasons stops the
+  batch: the outcome records it in the `model_access` category. Report that
+  blocker, which is not a simulator failure (the user signs in with
+  `relai setup` or waits for budget), and the runs that did not start.
 - A completed run with no scores and no evaluator errors is unscored: it has
   no verdict, so never report it as passing. Its result metadata carries the
   task verifier's `task_verifier_exit_status` when the verifier failed; point
@@ -115,7 +129,11 @@ When presenting results, distinguish these outcomes:
   non-mutating. Never broaden the retry to a suite or loop.
 - A simulator subprocess, environment, or infrastructure failure is not a
   behavioral score. Report the final automatic runtime-repair outcome supplied
-  by `relai simulate` (repaired and retried, repair failed, or retry exhausted)
-  without reimplementing repair yourself. Runtime repair never fixes host
+  by `relai simulate` (repaired and retried, repair failed, repair paused,
+  repair cancelled, or retry exhausted)
+  without reimplementing repair yourself. A paused repair names its saved
+  session in the run's `repair.session_path` and the command that resumes it
+  in `repair.continue_command`; tell the user to resume it, then rerun the
+  simulation. Runtime repair never fixes host
   problems such as Docker being unavailable; those follow the command
   reference's host-prerequisite guidance.
