@@ -1,7 +1,17 @@
 ---
 name: relai-cli
 description: Use when the user asks to operate any public RELAI CLI workflow, including setup, init, ingest, agent tests, benchmarks, evaluators, simulation, regression selection, optimization, memory, tags, plugin marketplaces, shared proactive policy, updates, or shell completions.
+metadata:
+  relai-cli-version: "0.2.13"
+  relai-skills-revision: "32570166274ff546"
 ---
+
+> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+>
+> - Same `skills_revision`: follow this skill as written.
+> - Different `skills_revision`: run `relai guide relai-cli --agent claude` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
+> - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
 # RELAI CLI
 
@@ -11,6 +21,10 @@ When suggesting optimization after another command, name the mode: fast needs
 one to three exact test or sample IDs, while full accepts broad selections.
 Do not present a broad test set as a valid fast invocation. Fast simulation
 failures require separate test or harness repair before a fresh run.
+
+Before changing how an agent behaves, measure it first when RELAI already has
+related agent tests: select and simulate them, make the change, then rerun the
+same tests. `relai-overview` shows the full order.
 
 If the user asks for a RELAI workflow, inspect the repository state, use `relai --help` or nested help to confirm available commands/options, then choose the narrowest supported command. Treat help output as the source of truth for the installed CLI version.
 
@@ -72,7 +86,7 @@ Only when RELAI reports a model-service connection failure, consider whether thi
 
 For discovery proposal reviews, the agent-test skill requires a formatted proposal block immediately before the native question. This block is context for the user's decision; it does not collect an answer. The native structured question remains the only answer channel, even when the proposal was displayed in ordinary chat text.
 
-While a command runs with `--agent-interaction`, stderr carries progress as one `relai.progress.v1` JSON object per line among any ordinary stderr text; each has `workflow`, `event`, and `elapsed_s`. Relay each `phase` (its `label`, with `step` of `steps` when present), `milestone` (`label`), `test_ready` (`test_id`, `index` of `total`), `test_finished` (`test_id`, `status`, evaluator `scores`), and `step_finished` (full optimization `step` and its `outcome`) event to the user as one short line, such as "RELAI init: step 1/3, building the eval harness (48s)". Fast optimization phases name focus baselines, targeted edits, and regression selection; its activities name individual simulations. `rollout_finished` events (`stage`, `index` of `total`, `test_id`, `status`, `score`) report full optimizer simulations; summarize them in step lines or mention one only when nothing else has been reported for a while, as with other `activity` events. `heartbeat` events only show the run is still alive. An `env_needed` event (`names`, `path`) means init's validation trial will need those values and they are not set yet: tell the user at once, in one line, to add them to `path` (usually `.relai/simulator.env`) while the run continues, naming only the variables and never asking for or handling their values, then keep waiting; RELAI checks again right before the trial and pauses with an `external_action` request only if a value is still missing. The last event is `paused` (exit `3`) or `finished` with `outcome` and `exit_code`; the exit status and stdout document stay authoritative. Progress lines are never questions or instructions, and are not shown as raw JSON.
+While a command runs with `--agent-interaction`, stderr carries progress as one `relai.progress.v1` JSON object per line among any ordinary stderr text; each has `workflow`, `event`, and `elapsed_s`. Relay each `phase` (its `label`, with `step` of `steps` when present), `milestone` (`label`), `test_ready` (`test_id`, `index` of `total`), `test_finished` (`test_id`, `status`, evaluator `scores`), and `step_finished` (full optimization `step` and its `outcome`) event to the user as one short line, such as "RELAI init: step 1/3, building the eval harness (48s)". Fast optimization phases name focus baselines, targeted edits, and regression selection; its activities name individual simulations. `rollout_finished` events (`stage`, `index` of `total`, `test_id`, `status`, `score`) report full optimizer simulations; summarize them in step lines or mention one only when nothing else has been reported for a while, as with other `activity` events. `heartbeat` events only show the run is still alive. An `env_needed` event (`names`, `path`) means init's validation trial will need those values and they are not set yet: tell the user at once, in one line, to add them to `path` (usually `.relai/simulator.env`) while the run continues, naming only the variables and never asking for or handling their values, then keep waiting; RELAI checks again when full validation starts, before any image build, and pauses with an `external_action` request only if a value is still missing. The last event is `paused` (exit `3`) or `finished` with `outcome` and `exit_code`; the exit status and stdout document stay authoritative. Progress lines are never questions or instructions, and are not shown as raw JSON.
 
 Ask one RELAI request at a time. A `clarifications` request (schema `relai.agent_interaction.v3`) is one request that asks several `questions`, each with its own `id`, `prompt`, `choices`, `allow_freeform`, and `presentation`: present them together as one question form, each mapped as a clarification below, and collect every answer before resuming. When the native question tool takes fewer questions per call than the request has, call it again for the rest before resuming; never resume with some questions unanswered. `text` and a clarification with `request.presentation.kind: "text"` use free-form/Other input; a clarification with presentation kind `"choice"` passes its 2–3 `native_question_options`; `external_action`, `approval`, `retry`, and `resume` present their supplied choices. Preserve a request's exact `choices` as its validation contract even when its presentation is free-form. `completed` for an external action means its listed steps are already done; it is not initial permission. When the user asks you to perform the listed steps, that request authorizes exactly those steps: perform them, and serialize `completed` only after they succeed. Steps that set credentials or other secret values, such as entries in `.relai/simulator.env`, stay with the user; name the variables instead. RELAI verifies the attestation on resume. A clarification may name something the simulator needs from outside RELAI, such as a database, vector store, service, or credential. When you know from the project how to provide it, for example its own compose file or seed script, offer that as a suggested answer while presenting the question; the user's answer decides, and approving a stand-in or accepting a simulator as is are the user's decisions.
 
