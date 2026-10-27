@@ -5,6 +5,8 @@ Use this guide when a user asks an agent to operate the `relai` CLI. Write the c
 Resolve CLI-managed paths from the project layout marker. Projects containing
 `.relai/.internal/layout.json` use `.relai/.internal/`; legacy projects without
 the marker use the corresponding path directly under `.relai/`.
+Before the first init, user-supplied files may go in `.relai/inputs/`;
+that directory alone does not select the legacy layout.
 
 ## Guardrails
 
@@ -140,19 +142,34 @@ or a usable session, a non-interactive setup fails with `setup.auth_required`.
 
 #### Host prerequisites
 
-When host readiness is unknown or a command reports a missing prerequisite,
-use `relai setup --check` to audit the required tools. If a required host tool
-such as `uv`, Docker, or Docker Compose is missing, ask the user to install it
-before continuing the dependent workflow. Explain what is missing and why it is
-needed, and provide OS-appropriate installation steps from the audit or CLI
-diagnostics. If Docker is installed but its daemon is unavailable, ask the user
-to start Docker. Do not install host tools or change machine configuration
-automatically; perform the setup only when the user asks you to.
+Run `relai setup --check` before the first RELAI workflow on a machine, and
+again when host readiness is unknown or a command reports a missing
+prerequisite. It checks that Git, Bash, uv, Docker, and Docker Compose are on
+PATH, then that they work: uv provides Python 3.12, the CLI-pinned Harbor
+release starts through the same `uv tool run` command every trial uses, and the
+Docker daemon answers and runs Linux containers. Its first run may download
+Python 3.12 and Harbor's packages into uv's own directories. A check whose
+dependency failed is shown as skipped; it runs once that dependency works.
+`relai init` runs the same check before any model work and stops with the same
+list.
+
+When anything is missing or not working, show the user every item in one list,
+not one at a time: what failed, the evidence the check printed, and what it is
+needed for (Git and Bash for the CLI, uv, Python, and Harbor to launch every
+trial, Docker, Compose, and a running Linux-container daemon to run the trial
+containers, and `gh` only to open optimizer pull requests). Then offer to run
+the OS-appropriate install or fix commands from the audit's "Install or fix"
+list, and run them only after the user confirms. Never use `sudo`, change
+system settings, or start services without that confirmation; a step only the
+user can take, such as starting Docker Desktop or signing out and back in after
+joining the `docker` group, stays theirs. A `download failed` result is a
+network problem, not a missing tool: ask the user to check their connection
+rather than reinstalling anything.
 
 Preserve any saved workflow session while prerequisites are unavailable. After
-the user reports that setup is complete, verify the missing tool is available
-and, for Docker, that `docker info` succeeds, then use the documented resume or
-retry path. Do not repeatedly rerun a workflow against an unchanged prerequisite
+the user reports that setup is complete, rerun `relai setup --check` and
+confirm every required check passes, then use the documented resume or retry
+path. Do not repeatedly rerun a workflow against an unchanged prerequisite
 failure. If RELAI supplies an `external_action` request, present it through the
 host's native question UI and follow its supplied resume protocol; `completed`
 attests to finished setup, and RELAI verifies it on resume.
@@ -230,16 +247,16 @@ the full catalog and runner contract.
 
 ### Coding-agent interaction mode
 
-Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v1` protocol when run with that flag, and report progress on stderr as `relai.progress.v1` JSON lines (`phase`, `activity`, `milestone`, `test_ready`, `env_needed`, `heartbeat`, then a final `paused` or `finished`). `simulate` also accepts the flag for progress (`test_started` and `test_finished` per run) and one `completed` or `failed` completion document naming its outcome; it never pauses for a response. `optimize` accepts it for one approval pause before any rollout, progress (`rollout_finished` per simulation and `step_finished` per optimization step), and one `completed`, `failed`, or `cancelled` completion document. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip`, where a free-form answer is revision feedback (once the candidate's proposal revisions are used up, it adds `retire`, which retires a risk no published agent test covers, and takes no free-form answer), and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`.
+Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v2` protocol when run with that flag (a pause that asks several questions at once is a `relai.agent_interaction.v3` `clarifications` request, answered with an `answers` object keyed by question ID), and report progress on stderr as `relai.progress.v1` JSON lines (`phase`, `activity`, `milestone`, `test_ready`, `env_needed`, `heartbeat`, then a final `paused` or `finished`). `simulate` also accepts the flag for progress (`test_started` and `test_finished` per run) and one `completed` or `failed` completion document naming its outcome; it never pauses for a response. `optimize` accepts it for one approval pause before any rollout, progress (`rollout_finished` per simulation and `step_finished` per optimization step), and one `completed`, `failed`, or `cancelled` completion document. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Interaction v2 uses `agent_test_create`, `agent_test_update`, `agent_test_suggest`, and `agent_test_discover` workflow names. V1 interaction responses remain accepted when resuming a saved question; preserve the schema version supplied by the question. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip` (plus the critique's options when the proposal needs what the shared harness does not support, each revising the proposal around it), where a free-form answer is revision feedback (once the candidate's proposal revisions are used up, it adds `retire`, which retires a risk no published agent test covers, and takes no free-form answer), and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`.
 
 ```sh
 relai init --agent-interaction
-relai init --resume --agent-interaction --interaction-response '{"schema_version":"relai.agent_interaction.v1","session_id":"SESSION","request_id":"REQUEST","answer":"ANSWER"}'
+relai init --resume --agent-interaction --interaction-response '{"schema_version":"relai.agent_interaction.v2","session_id":"SESSION","request_id":"REQUEST","answer":"ANSWER"}'
 ```
 
 ### `relai runs`
 
-On macOS and Linux, every `--agent-interaction` invocation runs as a background run that outlives the shell call, and waits for it up to `--wait` (default `90s`; `0s` returns once it has started). A run that finishes in time reports exactly as a foreground run. A run still going prints a `running` document (`relai.agent_interaction.v1` with `status: "running"`, `run_id`, `log_offset`, `wait_argv`, `cancel_argv`, and the `latest_progress` event) and exits `75`. `relai runs wait <run-id> --log-offset <n>`, the document's `wait_argv`, waits again, relaying on stderr every progress event written since the previous relay (always use the newest `running` document's `wait_argv`), and once the run finishes prints its stdout document and exits with its exit status (`3` for a question); `--wait` has no maximum, so a long one such as `24h` returns only when the run pauses for a question or ends; `relai runs status <run-id>` reports without waiting, `relai runs logs <run-id>` prints the whole stderr log, `relai runs cancel <run-id>` interrupts the run as Ctrl-C would and waits like `wait` (repeating it only waits; `--force` stops the run at once, skipping cleanup), and `relai runs list` lists the project's runs. Run them from the project directory. If a run's supervisor is killed, its command stops at its last checkpoint and the run is `lost` (exit `1`); resume a resumable workflow as usual.
+On macOS and Linux, every `--agent-interaction` invocation runs as a background run that outlives the shell call, and waits for it up to `--wait` (default `90s`; `0s` returns once it has started). A run that finishes in time reports exactly as a foreground run. A run still going prints a `running` document (`relai.agent_interaction.v2` with `status: "running"`, `run_id`, `log_offset`, `wait_argv`, `cancel_argv`, and the `latest_progress` event) and exits `75`. `relai runs wait <run-id> --log-offset <n>`, the document's `wait_argv`, waits again, relaying on stderr every progress event written since the previous relay (always use the newest `running` document's `wait_argv`), and once the run finishes prints its stdout document and exits with its exit status (`3` for a question); `--wait` has no maximum, so a long one such as `24h` returns only when the run pauses for a question or ends; `relai runs status <run-id>` reports without waiting, `relai runs logs <run-id>` prints the whole stderr log, `relai runs cancel <run-id>` interrupts the run as Ctrl-C would and waits like `wait` (repeating it only waits; `--force` stops the run at once, skipping cleanup), and `relai runs list` lists the project's runs. Run them from the project directory. If a run's supervisor is killed, its command stops at its last checkpoint and the run is `lost` (exit `1`); resume a resumable workflow as usual.
 
 ```sh
 relai runs wait <run-id>
@@ -331,14 +348,18 @@ relai optimize --full --benchmarks support-suite --agent-target support-agent --
 relai optimize --full --tests example --no-early-stop --no-pr
 ```
 
-Fast mode requires one to three exact samples across `--focus-tests`, `--focus-custom-tests`, and `--focus-benchmark-samples`. Its default 12-simulation budget includes initial focus baselines, post-edit reruns, and selected regression before/after checks. `--max-regression-checks` defaults to 3. `--regression-tests`, `--regression-tags`, `--regression-custom-tests`, `--regression-custom-tags`, `--regression-benchmarks`, and `--regression-benchmark-samples` optionally restrict the candidate pool; unmatched filters fail before approval. Exact benchmark regression samples are included even outside the usual ten-row benchmark screen. Fast results use `relai.optimize_fast_result.v1`; inspect baseline/post scores, unverified samples, regression selections and evidence, conflicts, and delivery. A completed simulation without an evaluator score remains unverified. An `inconclusive` result commits no fix; a verified but conflicted improvement may still be committed locally without an automatic PR. A failure after worktree creation writes a `failed` result with the available evidence and delivery state. Fast mode defaults to a `60m` timeout.
+Fast mode requires one to three exact samples across `--focus-tests`, `--focus-custom-tests`, and `--focus-benchmark-samples`. Its default 12-simulation budget includes initial focus baselines, post-edit reruns, and selected regression before/after checks. `--max-regression-checks` defaults to 3. `--regression-tests`, `--regression-tags`, `--regression-custom-tests`, `--regression-custom-tags`, `--regression-benchmarks`, and `--regression-benchmark-samples` optionally restrict the candidate pool; unmatched filters fail before approval. Exact benchmark regression samples are included even outside the usual ten-row benchmark screen. Fast results use `relai.optimize_fast_result.v1`; inspect baseline/post scores, unverified samples, regression selections and evidence, conflicts, and delivery. A completed simulation without a comparable evaluator or genuine verifier score remains unverified. An `inconclusive` result commits no fix; a verified but conflicted improvement may still be committed locally without an automatic PR. A failure after worktree creation writes a `failed` result with the available evidence and delivery state. Fast mode defaults to a `60m` timeout.
 
-Fast simulations do not automatically repair registered tests, benchmarks, or the simulator harness. An unverified focus baseline stops the run for separate repair; another unverified result keeps the worktree without committing the fix. Each simulation saves a suite result and, when available, a trajectory under the fast run's `evidence/` directory, retained after worktree cleanup. The result records each sample's definition digest and evidence paths; a changed definition makes before/after scores unverified. Completion reports show focus scores, regression status, coverage gaps, and delivery.
+Fast simulations do not automatically repair registered tests, benchmarks, or the simulator harness. An unverified focus baseline stops the run for separate repair; another unverified result keeps the worktree without committing the fix. Each simulation saves a suite result and, when available, a trajectory under the fast run's `evidence/` directory, retained after worktree cleanup. The result records each sample's definition digest and evidence paths; a changed definition makes before/after scores unverified. A regression check the second attempt cannot recheck for lack of budget (`unverified_budget`) keeps the first attempt's unverified measurement and evidence paths under `prior_attempt`. Completion reports show focus scores, regression status, coverage gaps, and delivery.
+
+Fast regression selection requires comparable scores and inspects current scoring definitions. Runtime-only checks and unresolved scoring are excluded with reasons in `regression_selection.excluded_candidates`; their commands are execution suggestions, not scored passes. An undeclared verifier can qualify when it writes a real verdict; managed exit-status fallback rewards never qualify. With zero eligible scored checks, report “focus verified; no independent regression coverage” and the normal local delivery result. Read `verification` separately from `delivery`; an eligible check with unexpected missing scores remains unverified. Authoring or adapting a scored regression test is a separate workflow.
 
 The rest of this section describes full mode. Custom selectors suppress the default Harbor pool; explicit Harbor selectors
 may be mixed in. `--skip-final-eval` uses the full rollout budget for
 optimization and omits final before/after scores. Its minimum rollout count
 is `2 * batch-size`. `--result-json` writes the structured optimizer result.
+
+Full mode can edit existing UTF-8 guidance files, subject to normal snapshot size and path exclusions, in `skills/` and `agents/` under `.agents/`, `.claude/`, and `.codex/`, plus `.cursor/rules/`, `.github/copilot-instructions.md`, and `.github/instructions/`. It excludes symlinks, hidden files within those directories, `worktrees/`, and `settings.local.json`. Use `.relai-snapshotignore` to exclude guidance from the source snapshot while retaining runtime access.
 
 `--seed-tests` provides warm-start agent tests. `--total-rollouts` and `--batch-size` control the full run. Early stopping is enabled by default; `--no-early-stop` disables it when it stops before the desired fix, while `--early-stop` remains accepted. `--total-rollouts` has no fixed maximum and must be at least `6 * batch-size` by default or `2 * batch-size` with `--skip-final-eval`; RELAI asks to confirm more than 50 total rollouts interactively, warns about them non-interactively, and names them in the `--agent-interaction` approval. `--no-pr` keeps accepted changes on the local optimizer branch; otherwise a configured GitHub CLI may push and open a PR. Pass `--no-pr` unless the user asked for a pull request. `--pr-base` must already exist on `origin`. `--no-commit` (or `[optimize] commit = false` in `.relai/config.toml`) creates no Git commits, so repository commit hooks never run: accepted changes stay staged in the optimizer worktree and RELAI's changes alone are written to `.relai/runs/optimizer/{run-id}/changes.patch`, which the summary shows how to `git apply`; it implies `--no-pr`. Use it when the repository's hooks or signing setup reject RELAI's commits; the commit error names both options.
 
@@ -568,7 +589,14 @@ relai tag list --verbose
 
 ### `relai test create`
 
-Create one agent test from either `--prompt` or a paired `--log-file` and `--feedback`. It generates a local Harbor package and validates it with one full simulation; the completion report names that run's `Validation trajectory`. When the reported plan's EvalsWiki citations need a Wiki reconciliation, the CLI agent cites the reconciled Wiki in a fresh plan, and a package that then differs only in its README keeps that simulation instead of running another. Use `--resume` for a paused create workflow, or `--restart` with a new source; do not combine the source options with `--resume`. Use `--timeout <duration|off>` to change the 90m wall-clock limit for one invocation.
+Create one agent test from either `--prompt` or a paired `--log-file` and `--feedback`. New tests, including discovery-created tests, require nonempty requirement- or risk-based tags in their plan and package. It generates a local Harbor package and validates it with one full simulation; the completion report names that run's `Validation trajectory`. When the reported plan's EvalsWiki citations need a Wiki reconciliation, the CLI agent cites the reconciled Wiki in a fresh plan, and a package that then differs only in its README keeps that simulation instead of running another. Use `--resume` for a paused create workflow, or `--restart` with a new source; do not combine the source options with `--resume`. Use `--timeout <duration|off>` to change the 90m wall-clock limit for one invocation.
+
+When a test needs a historical source revision, stage it as a task-owned archive
+or Git bundle and unpack it in task setup. Managed packaging accepts opaque
+staged assets and records their digests without exposing their contents to the
+CLI workflow agent. Safe raw file trees are also supported; compatible copies
+are batched by destination directory. Keep credentials and `.git` directories
+out of raw trees, and reconfigure packaging after changing a staged input.
 
 Before the CLI agent's first step, RELAI makes the reads every new agent test starts from: the project overview, the agent target's source file, the project adapter in `.relai/harbor/adapter/`, and the EvalsWiki requirement the test comes from (or the requirement list). A `relai test discover` build does the same with the requirements its accepted proposal cites. A read the permission profile would ask about is left to the agent, so these reads never prompt on their own; a resumed run keeps what it read.
 

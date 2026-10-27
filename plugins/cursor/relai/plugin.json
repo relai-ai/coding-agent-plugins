@@ -5,5 +5,5 @@
   },
   "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
   "name": "relai",
-  "version": "0.2.11"
+  "version": "0.2.12"
 }

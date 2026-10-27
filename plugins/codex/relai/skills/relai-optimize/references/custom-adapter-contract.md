@@ -65,7 +65,9 @@ same `--task-id`/`--output` and JSON contract for every language.
 
 Task IDs are unique and may have `/` groups; reject absolute paths, empty or
 `.`/`..` segments, `::`, comma, backslash, a lone `*`, and control characters.
-Each task requires at least one RELAI tag. Optional task fields are
+Give each task requirement- or risk-based RELAI tags. Missing or empty tags
+remain readable for legacy/custom catalogs; the optimizer assigns a unique
+scheduling and memory tag derived from the qualified task identity. Optional task fields are
 `description`, `input_summary`, `agent_target`, and `metadata`. Evaluator IDs
 must be unique and descriptions nonempty. Both finite range bounds must appear
 together with `min_score < max_score`; omission means 0–1. An omitted

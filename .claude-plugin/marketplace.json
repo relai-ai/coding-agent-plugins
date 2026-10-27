@@ -1,6 +1,6 @@
 {
   "description": "RELAI coding-agent plugins",
-  "name": "relai-claude",
+  "name": "relai",
   "owner": {
     "name": "RELAI"
   },
@@ -31,7 +31,7 @@
         "topic": "AI agent evals"
       },
       "source": "./plugins/claude/relai",
-      "version": "0.2.11"
+      "version": "0.2.12"
     }
   ]
 }
