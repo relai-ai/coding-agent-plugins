@@ -1,7 +1,17 @@
 ---
 name: relai-regression
-description: Use when a direct code change needs focused regression checks from existing agent tests, custom-adapter tasks, or benchmark samples without an optimizer run.
+description: Use when a planned or completed direct code change needs focused regression checks from existing agent tests, custom-adapter tasks, or benchmark samples without an optimizer run.
+metadata:
+  relai-cli-version: "0.2.13"
+  relai-skills-revision: "32570166274ff546"
 ---
+
+> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+>
+> - Same `skills_revision`: follow this skill as written.
+> - Different `skills_revision`: run `relai guide relai-regression --agent copilot` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
+> - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
 # RELAI Regression Selection
 
@@ -17,6 +27,10 @@ does not run a simulation or edit files.
 The selector can inspect permitted current source and EvalsWiki pages. A test
 without an explicit agent target remains eligible when `--agent-target` is set;
 review its rationale for relevance to that target.
+
+For a planned agent-behavior change, select and simulate cases before editing
+so the rerun after the change has a baseline; `relai-overview` shows the full
+order.
 
 Read the versioned selection result at the completion document's `result_path`.
 Each item has a type, exact reference,

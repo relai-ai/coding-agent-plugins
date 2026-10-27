@@ -15,7 +15,7 @@ that directory alone does not select the legacy layout.
 - Keep `.relai/config.toml`, `.relai/simulator.env`, `.relai/.internal/runs/`, generated caches, and secret values local. Never print or commit secret values.
 - Respect RELAI read/write permissions in `~/.relai/config.toml` and `.relai/config.toml`. Do not add agent source, dependency metadata, simulator support, agent tests, evaluator references, benchmark CSVs, or required runtime files to `permissions.read.deny`.
 - Public commands are documented below. Do not suggest hidden or debug-only commands.
-- Agentic commands have one wall-clock timeout per invocation: `simulate` 3h, `optimize` 6h, `test discover` 4h, other `test` commands 90m, and `init`, `ingest`, `wiki`, `evaluator`, and `benchmark` 1h. `--timeout <duration|off>` (such as `2h`) or the `RELAI_TIMEOUT` environment variable changes it; the flag wins. A timed-out command saves resumable progress where the workflow supports resume and exits `124` in terminal mode.
+- Agentic commands have one wall-clock timeout per invocation: `simulate` 3h, `optimize` 6h, `test discover` 4h, other `test` commands 90m (except the read-only `test template list` and `show`), and `init`, `ingest`, `wiki`, `evaluator`, and `benchmark` 1h. `--timeout <duration|off>` (such as `2h`) or the `RELAI_TIMEOUT` environment variable changes it; the flag wins. A timed-out command saves resumable progress where the workflow supports resume and exits `124` in terminal mode.
 - A resumable workflow's session records an explicit `--permissions` flag. A resume without the flag keeps the recorded one; a resume with it uses and records the new one. A session started without the flag follows the global profile.
 
 ## Project instructions for RELAI
@@ -38,7 +38,7 @@ RELAI's workflow agents (init, ingest, agent tests, benchmarks, evaluators, Eval
 
 ## Public command map
 
-`relai auth`, `relai auth status`, `relai auth login`, `relai auth logout`, `relai setup`, `relai update`, `relai uninstall`, `relai init`, `relai simulate`, `relai regression select`, `relai optimize`, `relai ingest`, `relai memory`, `relai wiki`, `relai tag`, `relai benchmark`, `relai test`, `relai test discover`, `relai evaluator`, `relai plugins`, `relai policy`, `relai runs`, and `relai completions` are the visible release command surface. Use `relai --version` to print the installed binary identity.
+`relai auth`, `relai auth status`, `relai auth login`, `relai auth logout`, `relai setup`, `relai update`, `relai uninstall`, `relai init`, `relai simulate`, `relai regression select`, `relai optimize`, `relai ingest`, `relai memory`, `relai wiki`, `relai tag`, `relai benchmark`, `relai test`, `relai test discover`, `relai evaluator`, `relai plugins`, `relai guide`, `relai policy`, `relai runs`, and `relai completions` are the visible release command surface. Use `relai --version` to print the installed binary identity.
 
 ### `relai policy`
 
@@ -229,8 +229,11 @@ Machine-level setup authentication is used by default. OAuth credentials are
 stored in the user-only file `~/.relai/credentials.json`. Harbor task images and project adapters own runtime
 dependencies; init never forwards OAuth credentials to project code.
 
-If captured sources change while init's EvalsWiki bootstrap is paused,
-`relai init --resume` restarts that bootstrap with fresh sources and reports it.
+If captured sources or the declared agent targets change while init's
+EvalsWiki bootstrap is paused, `relai init --resume` restarts that bootstrap
+with fresh sources and reports it. Init selects its targets after the
+bootstrap starts in the background, so a bootstrap that paused earlier
+restarts with them.
 The paused bootstrap's progress and clarification answers are discarded; other
 init progress is retained. Init's bootstrap captures only the RELAI artifacts
 registered before init started authoring its harness, not the smoke task init
@@ -238,6 +241,15 @@ is writing.
 
 `relai init` initializes the Harbor simulator runtime in `.relai/harbor/`.
 Agent tests, global evaluators, and CSV benchmarks are Harbor packages there.
+After the smoke test validates, init seeds the test template
+`<target>-basic` for the first selected agent target (the smoke test with an
+LLM judge and a generic rubric, replacing smoke’s scenario-specific code checks
+with the default trajectory verifier) after one extra validation trial. The trial runs
+under `--permissions auto` or an approved interactive `ask`; with
+`--agent-interaction`, only `auto` runs it. Otherwise seeding is skipped. A seeding failure never fails init (a cancel or timeout during
+seeding stops init for `relai init --resume`, which seeds again); the completion summary reports the
+template or why it was not seeded, with `relai init --restart` or
+`relai test template create --from <test-id>` as the retry.
 `--bare` creates project configuration without Harbor or a target agent for a
 custom-only project. It checks the same setup authentication as regular init
 before writing project state. Interactive runs offer setup when needed;
@@ -247,7 +259,7 @@ the full catalog and runner contract.
 
 ### Coding-agent interaction mode
 
-Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v2` protocol when run with that flag (a pause that asks several questions at once is a `relai.agent_interaction.v3` `clarifications` request, answered with an `answers` object keyed by question ID), and report progress on stderr as `relai.progress.v1` JSON lines (`phase`, `activity`, `milestone`, `test_ready`, `env_needed`, `heartbeat`, then a final `paused` or `finished`). `simulate` also accepts the flag for progress (`test_started` and `test_finished` per run) and one `completed` or `failed` completion document naming its outcome; it never pauses for a response. `optimize` accepts it for one approval pause before any rollout, progress (`rollout_finished` per simulation and `step_finished` per optimization step), and one `completed`, `failed`, or `cancelled` completion document. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Interaction v2 uses `agent_test_create`, `agent_test_update`, `agent_test_suggest`, and `agent_test_discover` workflow names. V1 interaction responses remain accepted when resuming a saved question; preserve the schema version supplied by the question. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip` (plus the critique's options when the proposal needs what the shared harness does not support, each revising the proposal around it), where a free-form answer is revision feedback (once the candidate's proposal revisions are used up, it adds `retire`, which retires a risk no published agent test covers, and takes no free-form answer), and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`.
+Commands whose help lists `--agent-interaction` (including `init`, `ingest`, the `wiki` workflows, `test create`, `test update`, `test discover`, `test suggestion`, `test template create`, `test template update`, `evaluator create`, `evaluator update`, `benchmark register`, and `benchmark update`) emit the typed `relai.agent_interaction.v2` protocol when run with that flag (a pause that asks several questions at once is a `relai.agent_interaction.v3` `clarifications` request, answered with an `answers` object keyed by question ID), and report progress on stderr as `relai.progress.v1` JSON lines (`phase`, `activity`, `milestone`, `test_ready`, `env_needed`, `heartbeat`, then a final `paused` or `finished`). `simulate` also accepts the flag for progress (`test_started` and `test_finished` per run) and one `completed` or `failed` completion document naming its outcome; it never pauses for a response. `optimize` accepts it for one approval pause before any rollout, progress (`rollout_finished` per simulation and `step_finished` per optimization step), and one `completed`, `failed`, or `cancelled` completion document. The installed `relai-cli` skill carries the full protocol: exit codes, completion reports, native-question mapping, and `--interaction-response` resumes. Interaction v2 uses `agent_test_create`, `agent_test_update`, `agent_test_suggest`, `agent_test_discover`, `test_template_create`, and `test_template_update` workflow names. V1 interaction responses remain accepted when resuming a saved question; preserve the schema version supplied by the question. Under `--agent-interaction`, discovery's proposal review becomes a clarification with choices `build`, `build_all`, and `skip` (plus the critique's options when the proposal needs what the shared harness does not support, each revising the proposal around it), where a free-form answer is revision feedback (once the candidate's proposal revisions are used up, it adds `retire`, which retires a risk no published agent test covers, and takes no free-form answer), and a timeout caught inside an agent loop arrives as an exit `3` limit pause with a `resume_argv`.
 
 ```sh
 relai init --agent-interaction
@@ -281,7 +293,7 @@ rewriting those files.
 
 ### `relai simulate`
 
-Measure selected agent tests, tags, benchmarks, custom adapter tasks, or one explicit Harbor task. At least one selector is required; selectors may be repeated or comma-separated. Use `--max-simulations` after selection/deduplication, `--shuffle` and optional `--shuffle-seed` for execution order, and `--result-json` for the suite result contract. Every completed run also saves its result under the CLI-managed `runs/results/` directory. Simulation results stay local. Run the selected simulation and its automatic repairs without asking for confirmation. Pass `--agent-interaction` for `relai.progress.v1` progress on stderr (`test_started`, then `test_finished` with `status` and evaluator `scores`, for each run; the next run's `test_started` can arrive before a run's `test_finished`, and `test_finished` events stay in test order) and one stdout completion document; simulation never pauses for questions, so it takes no `--interaction-response`. For Harbor runs, that document names `outcome_path`, the stable `relai.agent_simulation_outcome.v1` receipt for completed, partial, and terminal failures, which the CLI writes to a fresh path in its runs directory.
+Measure selected agent tests, tags, benchmarks, custom adapter tasks, or one explicit Harbor task. At least one selector is required; selectors may be repeated or comma-separated. Use `--max-simulations` after selection/deduplication, `--shuffle` and optional `--shuffle-seed` for execution order, and `--result-json` for the suite result contract. Every completed run also saves its result under the CLI-managed `runs/results/` directory. Simulation results stay local. Run the selected simulation and its automatic repairs without asking for confirmation. Pass `--agent-interaction` for `relai.progress.v1` progress on stderr (`test_started`, then `test_finished` with `status` and evaluator `scores`, for each run; the next run's `test_started` can arrive before a run's `test_finished`, and `test_finished` events stay in test order) and one stdout completion document; simulation never pauses for questions, so it takes no `--interaction-response`. For Harbor runs, that document names `outcome_path`, the stable `relai.agent_simulation_outcome.v2` receipt for completed, partial, and terminal failures, which the CLI writes to a fresh path in its runs directory.
 
 ```sh
 relai simulate --tests example
@@ -300,7 +312,10 @@ relai simulate --custom-tags 'example::request-workflow'
 selectors or `--retry-from-outcome`. `--env-file` and `--env`
 work with every selector.
 Custom selectors use `ADAPTER::ID` or `ADAPTER::TAG`, including an exact
-`ADAPTER::*` wildcard. They may be mixed with explicit Harbor selectors.
+`ADAPTER::*` wildcard. Always quote wildcard selectors in shell commands, for example
+`--custom-tests 'example::*'`. `--custom-tags 'example::*'` also selects every
+task in that adapter. Custom selectors may be mixed
+with explicit Harbor selectors.
 Custom runs use `--result-json` and saved per-run results. Outcome receipts,
 `--retry-from-outcome`, and `--harbor-task` are Harbor-only. Read
 `references/custom-adapter-contract.md` before creating an adapter.
@@ -315,9 +330,10 @@ When an agent consumes a Harbor result, read the stdout document's `outcome_path
 
 ### `relai regression select`
 
-Select a small set of existing regression checks after a direct fix without
-running them. `--base` defaults to `HEAD`; `--change` adds the intended change
-when Git alone is incomplete. `--agent-target` excludes explicitly different
+Select a small set of existing regression checks for a planned or completed
+direct change without running them. `--base` defaults to `HEAD`; `--change`
+adds the intended change when Git alone is incomplete, including a planned
+change with no diff yet. `--agent-target` excludes explicitly different
 targets while keeping unscoped tests eligible. The selector may inspect
 permitted project source and EvalsWiki through read-only tools. `--max-targets`
 defaults to 3, and `--result-json` saves the versioned result.
@@ -358,6 +374,8 @@ The rest of this section describes full mode. Custom selectors suppress the defa
 may be mixed in. `--skip-final-eval` uses the full rollout budget for
 optimization and omits final before/after scores. Its minimum rollout count
 is `2 * batch-size`. `--result-json` writes the structured optimizer result.
+
+Full mode captures up to 16 MiB of source for candidate rollback and skips ordinary files larger than 256 KB. Required runtime files must fit. If source exceeds the total limit, add generated or reference directories that the optimizer does not need to edit to `.relai-snapshotignore` at the project root; keep that ignore file at or below 256 KB. These files remain available at runtime; use read permissions to restrict access.
 
 Full mode can edit existing UTF-8 guidance files, subject to normal snapshot size and path exclusions, in `skills/` and `agents/` under `.agents/`, `.claude/`, and `.codex/`, plus `.cursor/rules/`, `.github/copilot-instructions.md`, and `.github/instructions/`. It excludes symlinks, hidden files within those directories, `worktrees/`, and `settings.local.json`. Use `.relai-snapshotignore` to exclude guidance from the source snapshot while retaining runtime access.
 
@@ -592,16 +610,26 @@ relai tag list --verbose
 Create one agent test from either `--prompt` or a paired `--log-file` and `--feedback`. New tests, including discovery-created tests, require nonempty requirement- or risk-based tags in their plan and package. It generates a local Harbor package and validates it with one full simulation; the completion report names that run's `Validation trajectory`. When the reported plan's EvalsWiki citations need a Wiki reconciliation, the CLI agent cites the reconciled Wiki in a fresh plan, and a package that then differs only in its README keeps that simulation instead of running another. Use `--resume` for a paused create workflow, or `--restart` with a new source; do not combine the source options with `--resume`. Use `--timeout <duration|off>` to change the 90m wall-clock limit for one invocation.
 
 When a test needs a historical source revision, stage it as a task-owned archive
-or Git bundle and unpack it in task setup. Managed packaging accepts opaque
+or Git bundle and unpack it in task setup. Files whose edits change the agent's
+behavior, such as its prompts, skills, or `AGENTS.md` guidance, still come from
+`/workspace` at trial time: the adapter replaces them in a writable copy of the
+base, so optimizer candidates reach the trial. Managed packaging accepts opaque
 staged assets and records their digests without exposing their contents to the
 CLI workflow agent. Safe raw file trees are also supported; compatible copies
 are batched by destination directory. Keep credentials and `.git` directories
 out of raw trees, and reconfigure packaging after changing a staged input.
+Packaging can declare a staged adapter entrypoint’s source and expected
+container location; a missing declared member or conflicting mapping returns to repair
+before the target runs. Installed package entrypoints and older specs remain
+supported.
 
 Before the CLI agent's first step, RELAI makes the reads every new agent test starts from: the project overview, the agent target's source file, the project adapter in `.relai/harbor/adapter/`, and the EvalsWiki requirement the test comes from (or the requirement list). A `relai test discover` build does the same with the requirements its accepted proposal cites. A read the permission profile would ask about is left to the agent, so these reads never prompt on their own; a resumed run keeps what it read.
 
+When a test template of the agent target fits the request, the CLI agent fills in its slots instead of writing every file, and the created test records the template in `[metadata.relai].template` while its other files still match. `--template <template-id>[@<version>]` goes with a source and requires that template; a validated test that no longer matches it is not saved. `--template` cannot be combined with `--resume`. After a test created from scratch whose shape another agent test of the target already has, and no template covers, the completion report suggests `relai test template create --from <test-id>` and names that other test; the first test of a shape gets no suggestion.
+
 ```sh
 relai test create --prompt test-refund-escalation
+relai test create --prompt "<request>" --template example-template
 relai test create --log-file run.log --feedback missing-escalation-policy
 relai test create --prompt test-retries --name retry-policy --agent-target support-agent
 relai test create --resume --timeout 2h
@@ -612,28 +640,63 @@ relai test create --prompt test-retries --timeout 45m
 
 Update one existing agent test from a prompt. RELAI first classifies the request using its grounding and current EvalsWiki. It updates the same agent test only when the request is a correction or related extension; an unrelated request is not silently turned into a new agent test. ID, target identity, and tags stay immutable. If intent changes, Wiki reconciliation completes before the staged update is promoted; a staged package that then differs only in its README keeps its passing validation run. As with create, the completion report names the `Validation trajectory`. `--timeout <duration|off>` changes the 90m wall-clock limit for one invocation.
 
+`--template-version <n|latest>` replaces `--prompt` and moves the test onto a newer version of its test template: RELAI stages the new version's files with the test's own slot files carried over byte for byte by slot ID, keeps the test's identity in `task.toml` and its README, and records the new version in `[metadata.relai].template` only if the validated test's fixed files match it (otherwise it publishes nothing and fails). When slot IDs, kinds, and evaluators match, `tests/params.json` keeps the new example's top-level keys, and the review assertions still verify against the EvalsWiki and cite files the new version has (a moved slot's citation follows it), no model runs: one validation trial (under `--agent-interaction`, only with the `auto` permissions profile; another profile stops before the trial and keeps the session for `--resume --permissions auto`) and a republish with the same Wiki page, README, and assertions. A trial that fails because of the test itself hands the upgrade to the agent with the failure; host, credential, and shared-runtime failures keep the session. Otherwise the agent adapts the staged slots as an update classified `template_upgrade`, and validation refuses a slot that still holds the template's example where the test's value could not be carried. The version the test already records reports no change; an older one, or a version of another agent target or target identity than the test's, is refused before staging (create a new test from a template of the test's target with `relai test create --template`), and a version whose packaging no longer matches its fixed files on the current runtime is refused with a pointer to `relai test template update <template-id> --refresh`. A test without a template record needs `--template <template-id>` and must be the source of one of its versions; any other test is refused (use `relai test create --template`). One test per command.
+
 ```sh
 relai test update refund-routing --prompt handle-documented-escalation-exception
 relai test update refund-routing --restart --prompt handle-documented-escalation-exception
 relai test update refund-routing --resume
+relai test update refund-routing --template-version latest
+relai test update refund-routing --template-version 2 --template refund-judged
 ```
 
 ### `relai test suggestion`
 
-Generate, list, review, accept, reject, or clear agent test suggestions. `generate` records suggestions against the current branch and commit, so it needs at least one commit and stops before any model work without one; ask the user to commit, then rerun it, or continue a saved run with `relai test suggestion generate --resume`. `accept` runs the `relai test create` workflow for one suggestion; an accepted suggestion whose creation session was discarded is listed again as abandoned. Accept and reject decisions queue their EvalsWiki evidence before the Wiki update; when another Wiki update is unfinished or the Wiki is busy, the decision still succeeds with a warning that it is queued, and the next `relai wiki update` or suggestion decision reconciles it. `clear-memory` clears the selected target's history and discards only that target's unfinished `generate` session.
+Generate, list, review, accept, reject, or clear agent test suggestions. `generate` records suggestions against the current branch and commit, so it needs at least one commit and stops before any model work without one; ask the user to commit, then rerun it, or continue a saved run with `relai test suggestion generate --resume`. `accept` runs the `relai test create` workflow for one suggestion, so a fitting test template is filled in the same way; `--template <template-id>[@<version>]` requires that template, checked for the agent target before the suggestion is recorded as accepted, and cannot be combined with `--resume`; an accepted suggestion whose creation session was discarded is listed again as abandoned. Accept and reject decisions queue their EvalsWiki evidence before the Wiki update; when another Wiki update is unfinished or the Wiki is busy, the decision still succeeds with a warning that it is queued, and the next `relai wiki update` or suggestion decision reconciles it. `clear-memory` clears the selected target's history and discards only that target's unfinished `generate` session.
 
 ```sh
 relai test suggestion generate --count 5
 relai test suggestion list
 relai test suggestion review
 relai test suggestion accept suggestion-1
+relai test suggestion accept suggestion-1 --template example-template
 relai test suggestion reject suggestion-1 --reason not-relevant
 relai test suggestion clear-memory --yes
 ```
 
+### `relai test template`
+
+A scenario slot replacement may refresh its generated asset checksum during
+validation and still retain its template record. Fixed runtime, evaluator, and
+packaging settings must still match the selected version. Tests that need this
+verification require a CLI that supports agent-test metadata schema 4; older
+CLIs request an upgrade. Existing template versions remain unchanged.
+
+List, inspect, create, and update test templates: validated agent tests kept under `.relai/harbor/templates/<id>/` as starting points for new ones, with immutable versions and named slot files. `relai init` seeds `<target>-basic` from its smoke test. `list` and `show` are read-only; `list` exits with an error after listing any template it could not read.
+
+`relai test update` keeps a test's `[metadata.relai].template` while the updated test still matches that template version, and drops it when the test's fixed files change; `relai test update <test-id> --template-version <n|latest>` upgrades it to a newer version.
+
+`create --from <test-id>` promotes a registered agent test to a new template's first version (the template ID defaults to the test ID; use `--id` for another). A short agent review writes the template's description and fit text and moves scenario values that code evaluators hardcode into `tests/params.json`; it never changes behavior or criteria, and the source test is left unchanged. An unchanged test reuses a saved `relai simulate` run of its exact package and runtime instead of a new trial; otherwise the review runs full validation. When a template of the same agent target already has the test's shape, the command names it and creates nothing. A paused review continues with `--resume`; `--restart --from <test-id>` discards it.
+
+`update <template-id>` publishes the template's next version in exactly one mode. `--prompt "<request>"` has the agent edit a copy of the latest version to match the request (any file may change; changed code evaluators must read scenario values from `tests/params.json`) and runs full validation. Slot contents are per-test examples, so an edit that changes only them is refused before a trial; an edit that changes only the description or fit text updates `template.toml` without a version or a trial. `--from <test-id>` builds the version from a registered agent test of the template's agent target through the same review as `create`, reusing a saved run when it validated the exact package and runtime. `--refresh` makes no edits: it re-renders the packaging against the current project runtime and runs one validation trial (under `--agent-interaction`, only with the `auto` permissions profile), which fixes a version `list` marks stale after `relai init` repaired the runtime. When the new version would have the latest version's fixed files and runtime, the command reports no change, and when another template of the agent target already has its shape, it names that template; either way it publishes nothing. `--prompt` may revise the description and fit text; otherwise they stay unless `--from`'s review rewrites them. Agent tests made from earlier versions stay on their version until `relai test update <test-id> --template-version <n|latest>` upgrades each, and the output says how many there are. A paused `--prompt` or `--from` update continues with `relai test template update --resume`; `--restart` discards it. A cancelled `--refresh` publishes nothing; run it again.
+
+```sh
+relai test template list
+relai test template list --agent-target <target>
+relai test template show <template-id>
+relai test template show <template-id> --version 2
+relai test template create --from <test-id>
+relai test template create --from <test-id> --id <template-id>
+relai test template create --resume
+relai test template update <template-id> --prompt "<request>"
+relai test template update <template-id> --from <test-id>
+relai test template update <template-id> --refresh
+relai test template update --resume
+```
+
 ### `relai test discover`
 
-Generate Harbor agent test candidates from EvalsWiki risk hypotheses and current code, then simulate and review them before promoting failure-revealing or useful coverage tests. The completion report lists each created test's simulation trajectory. Run `relai wiki bootstrap` first when the repository does not yet have a bootstrapped EvalsWiki. By default, interactive runs pause after proposal/critique so a human can review the proposed agent test before expensive build/run work; pass `--no-review` only when the user explicitly asks to skip review. With `--agent-interaction`, that review pauses for the coding agent's native question tool instead of being skipped. Use `--risk <id>` to test one curated hypothesis directly. `--timeout <duration|off>` changes the 4h wall-clock limit for one invocation. A paused discovery never resumes implicitly: use `--resume` to continue the saved session or `--restart` to discard it and start over.
+Generate Harbor agent test candidates from EvalsWiki risk hypotheses and current code, then simulate and review them before promoting failure-revealing or useful coverage tests. The completion report lists each created test's simulation trajectory. Run `relai wiki bootstrap` first when the repository does not yet have a bootstrapped EvalsWiki. By default, interactive runs pause after proposal/critique so a human can review the proposed agent test before expensive build/run work; pass `--no-review` only when the user explicitly asks to skip review. With `--agent-interaction`, that review pauses for the coding agent's native question tool instead of being skipped. Use `--risk <id>` to test one curated hypothesis directly. `--timeout <duration|off>` changes the 4h wall-clock limit for one invocation. A paused discovery never resumes implicitly: use `--resume` to continue the saved session or `--restart` to discard it and start over. Discovery uses the agent target's test templates: a proposal may name a fitting template, a candidate's first build may fill it (the test then records that template version when it still matches), and the final summary suggests `relai test template create --from <test-id>` once for a created test whose shape another test of the target already has and no template covers.
 
 `--risk` and `--count` are mutually exclusive. With `--risk <id>`, omit
 `--count`, including `--count 1`: the risk selector already targets one
@@ -701,6 +764,21 @@ relai plugins install --agent codex
 relai plugins install --agent claude
 relai plugins install --agent cursor
 relai plugins install --agent copilot
+```
+
+### `relai guide`
+
+Print the guidance built into the installed CLI. Each installed RELAI skill
+opens with a version check: run `relai guide --revision` once per session, and
+when its `skills_revision` differs from the skill's, follow
+`relai guide <workflow> --agent <host>` instead of the installed skill. Read a
+reference that output names with `relai guide --reference <file>`.
+
+```sh
+relai guide --revision
+relai guide --list
+relai guide relai-cli --agent codex
+relai guide --reference relai-cli-commands.md
 ```
 
 New Harbor tasks include a `README.md` file guide (an agent test's README is the

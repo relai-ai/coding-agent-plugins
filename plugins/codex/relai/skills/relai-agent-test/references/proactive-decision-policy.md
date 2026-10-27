@@ -1,4 +1,6 @@
 Apply this policy once to the completed conversation and its resulting changes.
+The exception is a baseline for a planned agent-behavior change (rung 5),
+which comes before the edit.
 Choose the narrowest action that preserves durable agent knowledge or evaluates
 meaningful agent behavior. Do not turn every coding request into RELAI work.
 
@@ -36,6 +38,10 @@ meaningful agent behavior. Do not turn every coding request into RELAI work.
    After a direct fix with several plausible existing cases, use
    `relai regression select` to choose focused checks, then run the selected
    simulations. Selection alone is not behavioral evidence.
+   A baseline cannot be recovered after the edit. When a planned agent-behavior
+   change touches behavior that existing coverage measures, run
+   `relai regression select --change "<planned change>"` and simulate the
+   selected cases before editing, then rerun the same cases after the change.
 
 The selected action can include its necessary predecessor: grounded coverage
 creation, and coverage updates driven by new durable intent, require a durable

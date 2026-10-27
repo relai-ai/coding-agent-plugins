@@ -1,7 +1,17 @@
 ---
 name: relai-simulate
 description: Use when measuring current agent behavior against RELAI agent tests, tags, or benchmarks.
+metadata:
+  relai-cli-version: "0.2.13"
+  relai-skills-revision: "32570166274ff546"
 ---
+
+> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+>
+> - Same `skills_revision`: follow this skill as written.
+> - Different `skills_revision`: run `relai guide relai-simulate --agent cursor` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
+> - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
 # RELAI Simulation
 
@@ -20,6 +30,8 @@ Good fits:
 - A benchmark or tag should be run before deciding what to fix.
 - A recent change needs behavioral validation beyond unit tests.
 - Optimization should be preceded by a baseline measurement.
+- A planned agent-behavior change needs a baseline before editing;
+  `relai-overview` shows the full order.
 
 Before simulating, confirm the selected agent tests, tags, or benchmarks exist.
 If required runtime env vars are missing, tell the user their names and that
@@ -78,7 +90,7 @@ the Harbor evaluator repair retry flow below.
 With `--agent-interaction` (plus bounded `--outcome-change` or
 `--outcome-intent` when useful), stdout carries one completion document, with
 status `completed`, or `failed` on exit 1 once the simulation starts. For Harbor runs, its `outcome_path`
-names the versioned `relai.agent_simulation_outcome.v1` artifact the CLI wrote
+names the versioned `relai.agent_simulation_outcome.v2` artifact the CLI wrote
 for this invocation: read and summarize it, including terminal failures and
 partial suites. Do not scrape or parse terminal prose: it is human-facing and
 not the integration contract.
