@@ -2,7 +2,7 @@
   "interface": {
     "displayName": "RELAI"
   },
-  "name": "relai-codex",
+  "name": "relai",
   "plugins": [
     {
       "category": "Productivity",

@@ -34,7 +34,7 @@ Before registering a benchmark:
 - In a multi-target repository, identify the intended registered target before registering the benchmark.
 - Do not search, dump, or edit the Wiki yourself; the benchmark workflow reads its own grounding.
 - Use `relai benchmark register --help` through the `relai-cli` skill before constructing the command.
-- Benchmark tags (in `benchmark.toml`) select the benchmark with `--tags`. When optimizing, each sample is grouped only by `benchmark-<id>` and `benchmark-<id>-sample-<index>`.
+- Benchmark tags in `benchmark.toml` must include a requirement- or risk-based tag and select the benchmark with `--tags`. The manifest’s `[sample_tags]` table stores tags by zero-based row index, including `benchmark-<id>` and `benchmark-<id>-sample-<index>` for every row. Row-specific tags can group related cases. Optimizer scheduling and memory use both shared and row-specific tags, independently of task-template tags.
 - Confirm with the user before `relai benchmark remove`; it deletes the benchmark.
 
 After `relai benchmark register` or `relai benchmark update` completes, read the benchmark's EvalsWiki page (`.relai/evals-wiki/tests/benchmarks/<id>.md`) and summarize it: its ID and what it measures (Description) in one sentence, its coverage (Coverage and sample mapping) and sample count (Dataset), and one "passes when" line from Evaluation criteria. For an update, say what changed.
