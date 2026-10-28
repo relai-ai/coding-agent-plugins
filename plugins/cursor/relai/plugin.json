@@ -6,5 +6,5 @@
   "description": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests.",
   "license": "Apache-2.0",
   "name": "relai",
-  "version": "0.2.13"
+  "version": "0.2.14"
 }

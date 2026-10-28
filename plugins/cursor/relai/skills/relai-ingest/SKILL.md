@@ -2,14 +2,14 @@
 name: relai-ingest
 description: Use when the user wants RELAI to ingest a folder of agent traces, transcripts, logs, or other context into EvalsWiki.
 metadata:
-  relai-cli-version: "0.2.13"
-  relai-skills-revision: "32570166274ff546"
+  relai-cli-version: "0.2.14"
+  relai-skills-revision: "17c39e03dcd25819"
 ---
 
-> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.14). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-ingest --agent cursor` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-ingest --agent cursor` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.14, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
@@ -20,8 +20,8 @@ EvalsWiki. For a bounded decision or correction from the current coding-agent
 conversation, use `relai wiki update` instead. For one run log paired with
 feedback to create an agent test, use `relai test create`.
 
-If `command -v relai` finds nothing, install the CLI as described in "Install
-the CLI" in `references/relai-cli-commands.md` before continuing.
+If `command -v relai` finds nothing, use the `relai-cli` skill, which asks
+the user to install the CLI and then signs in, before continuing.
 
 Read `references/relai-cli-commands.md` and inspect `relai ingest --help` for
 the installed CLI. From the project root, confirm `.relai/config.toml` and

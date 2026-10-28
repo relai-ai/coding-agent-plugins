@@ -54,19 +54,17 @@ relai policy remove
 ### Install the CLI
 
 These skills can be installed from a plugin marketplace without the CLI. When
-`command -v relai` finds nothing, the user's request for a RELAI workflow
-covers installing it: tell the user in one line that you are installing the
-RELAI CLI, then on macOS or Linux run the standalone installer:
-
-```sh
-curl -fsSL https://api.relai.ai/install.sh | bash
-```
-
-If the installer fails, show its error and stop; do not retry with `sudo` or
-another install method. On any other platform, do not guess an installer; send
-the user to https://cli-docs.relai.ai/installation. The installer adds its
-directory to the shell profile, which the current shell has not read, so run
-`relai` by the full path the installer printed until a new shell starts.
+`command -v relai` finds nothing, follow "When the CLI is missing" in the
+`relai-cli` skill, which shows the user the install command to run in their
+own terminal; if that skill is unavailable, send them to
+https://cli-docs.relai.ai/installation#plugin-marketplace-users. Wait until
+they say it is installed. Installing the CLI stays the user's step: do not
+download or run an installer yourself, even when asked. If they report an
+installer error, help them read it, but do not install the CLI another way.
+The installer adds its directory to the shell profile, which your shell has
+not read, so if `command -v relai` still finds nothing, ask the user for the
+path the installer printed and run `relai` by that full path until a new shell
+starts.
 
 Then run `relai setup --check` and follow "Host prerequisites" below for
 anything missing, and sign in with `relai auth login`. It prints a verification
@@ -756,7 +754,7 @@ relai benchmark remove --id support-suite
 
 ### `relai plugins install`
 
-Replace the complete bundled Codex and Claude Code plugin sources under `~/.relai/plugins/`, then configure the selected hosts. Cursor uses `~/.cursor/plugins/local/relai`; GitHub Copilot uses one directory per skill under `~/.copilot/skills/`. `--agent` accepts `all` (the default), `codex`, `claude`, `cursor`, or `copilot`. Neither host executable nor an authenticated session is required. `relai update` also refreshes previously configured plugins. Each host is installed independently; when one fails, the others still are, and the command names each failed host and exits non-zero. Start a new Codex or Cursor session (or restart the app) before verifying RELAI skills. In Claude Code, run `/reload-plugins`, then verify RELAI skills. Use an interactive GitHub Copilot session; cloud-agent and other headless sessions are unsupported.
+Replace the complete bundled Codex and Claude Code plugin sources under `~/.relai/plugins/`, then configure the selected hosts. Cursor uses `~/.cursor/plugins/local/relai`; GitHub Copilot uses one directory per skill under `~/.copilot/skills/`. `--agent` accepts `all` (the default), `codex`, `claude`, `cursor`, or `copilot`. Neither host executable nor an authenticated session is required; when the `claude` CLI is available, the command also installs the Claude Code plugin through it and confirms that it is enabled, leaving a plugin the user disabled off. `relai update` also refreshes previously configured plugins. Each host is installed independently; when one fails, the others still are, and the command names each failed host and exits non-zero. Start a new Codex or Cursor session (or restart the app) before verifying RELAI skills. New Claude Code sessions load the plugin; in a session that's already open, run `/reload-plugins`. Use an interactive GitHub Copilot session; cloud-agent and other headless sessions are unsupported.
 
 ```sh
 relai plugins install

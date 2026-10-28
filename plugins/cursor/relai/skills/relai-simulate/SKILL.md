@@ -2,14 +2,14 @@
 name: relai-simulate
 description: Use when measuring current agent behavior against RELAI agent tests, tags, or benchmarks.
 metadata:
-  relai-cli-version: "0.2.13"
-  relai-skills-revision: "32570166274ff546"
+  relai-cli-version: "0.2.14"
+  relai-skills-revision: "17c39e03dcd25819"
 ---
 
-> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.14). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-simulate --agent cursor` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-simulate --agent cursor` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.14, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
@@ -19,8 +19,8 @@ Apply `references/proactive-decision-policy.md` and `references/relai-cli-comman
 targeted-measurement rung: run relevant grounded coverage when behavioral
 validation is needed, not as a default for ordinary implementation work.
 
-If `command -v relai` finds nothing, install the CLI as described in "Install
-the CLI" in `references/relai-cli-commands.md` before continuing.
+If `command -v relai` finds nothing, use the `relai-cli` skill, which asks
+the user to install the CLI and then signs in, before continuing.
 
 Use RELAI simulation when the goal is to measure current behavior against repeatable cases.
 
