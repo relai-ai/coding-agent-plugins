@@ -2,14 +2,14 @@
 name: relai-cli
 description: Use when the user asks to operate any public RELAI CLI workflow, including setup, init, ingest, agent tests, benchmarks, evaluators, simulation, regression selection, optimization, memory, tags, plugin marketplaces, shared proactive policy, updates, or shell completions.
 metadata:
-  relai-cli-version: "0.2.13"
-  relai-skills-revision: "32570166274ff546"
+  relai-cli-version: "0.2.14"
+  relai-skills-revision: "17c39e03dcd25819"
 ---
 
-> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.14). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-cli --agent copilot` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-cli --agent copilot` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.14, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
@@ -36,10 +36,22 @@ that directory alone does not select the legacy layout.
 
 ## When the CLI is missing
 
-If `command -v relai` finds nothing, install the CLI and sign in as described
-in "Install the CLI" in `references/relai-cli-commands.md` before running any
-other `relai` command. That replaces `relai setup --agent` below, which would
-install a second copy of these skills.
+If `command -v relai` finds nothing, the RELAI CLI is not installed. Installing
+it is the user's step: never download or run an installer yourself, even when
+asked. Tell the user that this workflow needs the RELAI CLI, show them this
+command, and ask them to run it in their own terminal on macOS or Linux:
+
+```sh
+curl -fsSL https://api.relai.ai/install.sh | bash
+```
+
+On any other platform, send them to
+https://cli-docs.relai.ai/installation#plugin-marketplace-users instead. Wait
+until they say it is installed, then continue with "Install the CLI" in
+`references/relai-cli-commands.md`, which finds the new `relai` and signs in
+with `relai auth login`, before running any other `relai` command. That
+replaces `relai setup --agent` below, which would install a second copy of
+these skills.
 
 ## Authentication: OAuth
 

@@ -2,21 +2,21 @@
 name: relai-regression
 description: Use when a planned or completed direct code change needs focused regression checks from existing agent tests, custom-adapter tasks, or benchmark samples without an optimizer run.
 metadata:
-  relai-cli-version: "0.2.13"
-  relai-skills-revision: "32570166274ff546"
+  relai-cli-version: "0.2.14"
+  relai-skills-revision: "17c39e03dcd25819"
 ---
 
-> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.14). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-regression --agent claude` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-regression --agent claude` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.14, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
 # RELAI Regression Selection
 
-If `command -v relai` finds nothing, install the CLI as described in "Install
-the CLI" in `references/relai-cli-commands.md` before continuing.
+If `command -v relai` finds nothing, use the `relai-cli` skill, which asks
+the user to install the CLI and then signs in, before continuing.
 
 For a straightforward direct fix, finish the change and its deterministic
 checks, then run `relai regression select --agent-interaction` when existing

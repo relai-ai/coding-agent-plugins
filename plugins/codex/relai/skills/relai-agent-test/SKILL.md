@@ -2,14 +2,14 @@
 name: relai-agent-test
 description: Use when desired agent behavior should be captured as a repeatable RELAI agent test from a prompt, a run log plus feedback, or hard-scenario suggestions from existing RELAI context.
 metadata:
-  relai-cli-version: "0.2.13"
-  relai-skills-revision: "32570166274ff546"
+  relai-cli-version: "0.2.14"
+  relai-skills-revision: "17c39e03dcd25819"
 ---
 
-> **RELAI version check.** This skill matches skills revision `32570166274ff546` (RELAI CLI 0.2.13). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.14). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-agent-test --agent codex` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.13, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-agent-test --agent codex` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.14, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 
@@ -22,8 +22,8 @@ in EvalsWiki. When an update is driven by newly confirmed durable intent,
 record or reconcile that intent in EvalsWiki before updating coverage; pure
 reuse with no new durable knowledge is read-only.
 
-If `command -v relai` finds nothing, use the `relai-cli` skill to install the
-CLI and sign in before continuing.
+If `command -v relai` finds nothing, use the `relai-cli` skill, which asks
+the user to install the CLI and then signs in, before continuing.
 
 Use a RELAI agent test when one desired behavior should be captured as a repeatable simulation case.
 

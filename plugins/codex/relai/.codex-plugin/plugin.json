@@ -11,14 +11,22 @@
       "Optimization"
     ],
     "category": "Productivity",
-    "defaultPrompt": "Use RELAI to simulate and improve this agent.",
+    "composerIcon": "./assets/icon.png",
+    "defaultPrompt": [
+      "Use RELAI to simulate and improve this agent."
+    ],
     "developerName": "RELAI",
     "displayName": "RELAI CLI",
+    "logo": "./assets/icon.png",
     "longDescription": "Continuously evaluate and optimize your AI agent: build Harbor-format evals from your code, requirements, and traces, then get harness improvements as pull requests. The plugin guides Codex through RELAI CLI setup, EvalsWiki, agent tests, benchmarks, simulation, and optimization.",
-    "shortDescription": "Evals and harness optimization for AI agents, delivered as pull requests."
+    "privacyPolicyURL": "https://relai.ai/policies/Website-Privacy-Policy-July-29-2024.pdf",
+    "shortDescription": "Evaluate and optimize agents",
+    "supportURL": "https://relai.ai/contact",
+    "termsOfServiceURL": "https://relai.ai/policies/RELAI-Website-Terms-of-Use-Dec-3rd-2024.pdf",
+    "websiteURL": "https://relai.ai"
   },
   "license": "Apache-2.0",
   "name": "relai",
   "skills": "./skills/",
-  "version": "0.2.13"
+  "version": "0.2.14"
 }
