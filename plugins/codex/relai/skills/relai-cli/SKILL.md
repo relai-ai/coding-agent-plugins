@@ -2,14 +2,14 @@
 name: relai-cli
 description: Use when the user asks to operate any public RELAI CLI workflow, including setup, init, ingest, agent tests, benchmarks, evaluators, simulation, regression selection, optimization, memory, tags, plugin marketplaces, shared proactive policy, updates, or shell completions.
 metadata:
-  relai-cli-version: "0.2.15"
-  relai-skills-revision: "17c39e03dcd25819"
+  relai-cli-version: "0.2.16"
+  relai-skills-revision: "4d36dcd54a4e939e"
 ---
 
-> **RELAI version check.** This skill matches skills revision `17c39e03dcd25819` (RELAI CLI 0.2.15). Once per session, before following it, run `relai guide --revision`:
+> **RELAI version check.** This skill matches skills revision `4d36dcd54a4e939e` (RELAI CLI 0.2.16). Once per session, before following it, run `relai guide --revision`:
 >
 > - Same `skills_revision`: follow this skill as written.
-> - Different `skills_revision`: run `relai guide relai-cli --agent codex` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.15, suggest `relai update` once so they also get this plugin's newer features.
+> - Different `skills_revision`: run `relai guide relai-cli --agent codex` and follow its output instead of this file; the user does not need to do anything. If the printed `cli_version` is older than 0.2.16, suggest `relai update` once so they also get this plugin's newer features.
 > - `relai guide` is not a command: this RELAI CLI predates the check. Ask the user to run `relai update`, then continue.
 > - `relai guide` fails any other way, for example on an unknown workflow: follow this skill as written and tell the user the error once.
 

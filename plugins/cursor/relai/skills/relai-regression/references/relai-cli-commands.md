@@ -326,6 +326,39 @@ another program needs to consume a simulation.
 Users add required runtime variables to the local `.relai/simulator.env` file; RELAI loads it automatically for simulation and optimization, and the values persist across local runs. Use the shell environment for temporary runs or CI. Use repeated `--env-file PATH` for an alternate file or `--env KEY=VALUE` for an invocation-specific override. `relai init` seeds that file with empty placeholders for the declared names, so the user only fills in values. Tell the user which variable names are missing; do not create, open, or edit the file for them, and do not put secret values in chat or command history.
 When an agent consumes a Harbor result, read the stdout document's `outcome_path` and summarize that outcome instead of parsing terminal prose; once the simulation starts, the document exists on exit 1 too, with status `failed`. For custom results, read the document's summary or the suite JSON. The outcome distinguishes valid low scores from evaluator errors, unscored runs (no evaluator scored them; `next_actions` includes `review_unscored_runs`), simulator/runtime and environment/configuration failures, model-access stops (category `model_access`, next action `restore_model_access`: the model proxy refused a host judge for sign-in, budget, or usage-cap reasons), and publication failures, carries each score's evaluator `feedback` when the evaluator gave one, and lists each run's local artifacts, including its ATIF trajectory and saved per-run result. Each evaluator error carries a structured `repair_decision`, and `--retry-from-outcome <initial> --agent-interaction` reruns the recorded selection once after an evaluator repair; the `relai-simulate` skill describes when to use them. `--outcome-change` and `--outcome-intent` accept caller-supplied attribution.
 
+### `relai custom-adapter validate`
+
+Validate fresh custom-adapter execution with
+`relai custom-adapter validate run --custom-tests 'ADAPTER::ID'`, or use
+`--custom-tags 'ADAPTER::TAG'`. It runs the adapter's `prepare` and runner
+commands, so treat the target's normal costs and external side effects as real;
+use a narrow selector and safe target environment. `--env-file` and `--env`
+provide runtime values. Deterministic checks cover the catalog, result contract,
+declared evaluators, scores, failure classification, and trajectory shape.
+
+AI review runs by default and inspects relevant adapter source plus the freshly
+redacted trajectory for evidence-quality concerns. Its findings are advisory.
+If model access is unavailable, report that AI review is incomplete and retain
+the deterministic findings. `--offline` explicitly runs deterministic checks
+only.
+
+Use `relai custom-adapter validate results PATH` for an existing
+`relai.simulation_result.v1` result or `relai.simulation_suite_result.v1` suite
+without executing a task. The command checks it against the current checkout;
+the artifact does not prove which catalog or source revision produced it. An
+embedded structured trajectory must use `ATIF-v1.7` with a `steps` array;
+malformed embedded evidence is a hard error. RELAI reapplies the current
+checkout's runtime redaction to valid saved evidence before model review,
+including secret-shaped fields and values known through the current runtime
+environment. This cannot guarantee removal of a historical secret that the
+current runtime configuration no longer identifies. Review saved evidence
+first when its earlier environment may have contained other sensitive values.
+A compatible legacy result without embedded structured trajectory evidence
+keeps its deterministic score checks and source review, but trajectory-quality
+review is unavailable and the AI review is incomplete. Use `validate run` for
+fresh evidence under the current configuration, or add `--offline` for
+deterministic-only inspection.
+
 ### `relai regression select`
 
 Select a small set of existing regression checks for a planned or completed
@@ -350,7 +383,7 @@ relai regression select --base main --agent-target support-agent --agent-interac
 
 Choose `--fast` for a targeted fix against one to three exact focus samples or `--full` for the broader optimization loop. If neither is supplied, a terminal asks for a mode; `--agent-interaction` returns a mode-choice request. Headless runs require an explicit flag. In a multi-target repository, `--agent-target` is required. Both modes use an isolated optimizer worktree.
 
-From a coding agent, run it with `--agent-interaction`. Each request exits `3`; present it with the native question tool and resume with `resume_argv` plus `--interaction-response`. Fast mode asks for approval of focus, simulation budget, regression cap, source state, and delivery. Full mode asks for approval of scope, rollout budget, and delivery. The full scope is the default (structural changes allowed, current models fixed, no new paid tools, cost optimization disabled) with requested scope flags applied. A response never applies to a changed command.
+From a coding agent, run it with `--agent-interaction`. Each request exits `3`; present it with the native question tool and execute its `resume_argv` exactly, appending one `--interaction-response` object. Copy the request's `schema_version`, `session_id`, and `request.id` into `schema_version`, `session_id`, and `request_id`, then put the user's answer in `answer`: `{"schema_version":"relai.agent_interaction.v2","session_id":"SESSION","request_id":"REQUEST","answer":"approve"}`. Never reuse identifiers from an earlier request or reconstruct the resume command. This response answers a RELAI interaction pause; it is not part of a custom adapter catalog or result. Fast mode asks for approval of focus, simulation budget, regression cap, source state, and delivery. Full mode asks for approval of scope, rollout budget, and delivery. The full scope is the default (structural changes allowed, current models fixed, no new paid tools, cost optimization disabled) with requested scope flags applied. A response never applies to a changed command.
 
 ```sh
 relai optimize --fast --focus-tests example --no-pr --agent-interaction
@@ -368,6 +401,12 @@ Fast simulations do not automatically repair registered tests, benchmarks, or th
 
 Fast regression selection requires comparable scores and inspects current scoring definitions. Runtime-only checks and unresolved scoring are excluded with reasons in `regression_selection.excluded_candidates`; their commands are execution suggestions, not scored passes. An undeclared verifier can qualify when it writes a real verdict; managed exit-status fallback rewards never qualify. With zero eligible scored checks, report “focus verified; no independent regression coverage” and the normal local delivery result. Read `verification` separately from `delivery`; an eligible check with unexpected missing scores remains unverified. Authoring or adapting a scored regression test is a separate workflow.
 
+Full optimization may report potential test-quality findings for agent tests,
+benchmark samples, and custom-adapter tasks. The completion result includes
+`potential_test_issues` and, when findings exist,
+`potential_test_issues_artifact_path`. Follow the `relai-optimize` skill's
+reporting instructions, including when no change was accepted.
+
 The rest of this section describes full mode. Custom selectors suppress the default Harbor pool; explicit Harbor selectors
 may be mixed in. `--skip-final-eval` uses the full rollout budget for
 optimization and omits final before/after scores. Its minimum rollout count
@@ -379,8 +418,8 @@ Full mode can edit existing UTF-8 guidance files, subject to normal snapshot siz
 
 `--seed-tests` provides warm-start agent tests. `--total-rollouts` and `--batch-size` control the full run. Early stopping is enabled by default; `--no-early-stop` disables it when it stops before the desired fix, while `--early-stop` remains accepted. `--total-rollouts` has no fixed maximum and must be at least `6 * batch-size` by default or `2 * batch-size` with `--skip-final-eval`; RELAI asks to confirm more than 50 total rollouts interactively, warns about them non-interactively, and names them in the `--agent-interaction` approval. `--no-pr` keeps accepted changes on the local optimizer branch; otherwise a configured GitHub CLI may push and open a PR. Pass `--no-pr` unless the user asked for a pull request. `--pr-base` must already exist on `origin`. `--no-commit` (or `[optimize] commit = false` in `.relai/config.toml`) creates no Git commits, so repository commit hooks never run: accepted changes stay staged in the optimizer worktree and RELAI's changes alone are written to `.relai/runs/optimizer/{run-id}/changes.patch`, which the summary shows how to `git apply`; it implies `--no-pr`. Use it when the repository's hooks or signing setup reject RELAI's commits; the commit error names both options.
 
-A confirmed target-agent crash or timeout is a failed verdict with score `0`, so optimization may repair it. Evaluator, simulator harness, setup, and other failures without a trustworthy agent verdict remain unscored and are excluded from score comparisons. A host prerequisite failure, such as an unavailable Docker daemon, stops optimization with its cause and keeps accepted changes.
-For a custom adapter, a validated non-null `failure` result without evaluator errors is a failed verdict. A custom grader error remains unscored even when another grader returned a partial score. An unsuccessful runner command remains unscored because its exit alone does not identify the failing component. Missing executables, malformed results, and missing runtime requirements stop optimization for correction instead.
+A confirmed target-agent crash or timeout is a failed verdict. Full mode scores it `0`, so that optimizer may repair it; fast mode requires comparable scored evidence and leaves the sample unverified. Evaluator, simulator harness, setup, and other failures without a trustworthy agent verdict remain unscored and are excluded from score comparisons. A host prerequisite failure, such as an unavailable Docker daemon, stops optimization with its cause and keeps accepted changes.
+For a custom adapter, a validated non-null `failure` result without evaluator errors is a failed verdict. Full mode scores it `0`; fast mode rejects it as non-comparable evidence and leaves the sample unverified. A custom grader error remains unscored in either mode even when another grader returned a partial score. An unsuccessful runner command remains unscored because its exit alone does not identify the failing component. Missing executables, malformed results, and missing runtime requirements stop optimization for correction instead.
 
 RELAI copies the live checkout without changing its files, index, or `HEAD`. It commits publishable pre-existing code changes as a before-optimization baseline, then commits accepted optimizer changes separately. Warn the user that an automatic PR includes both commits. `.relai` state, explicit runtime env inputs, credentials, dependency-setup outputs, generated reports, and Git-ignored private files remain uncommitted. No accepted publishable optimizer diff means no automatic PR, though a baseline branch may remain locally. With `--no-commit` or `[optimize] commit = false`, RELAI creates neither commit and opens no PR; the patch holds only its accepted changes.
 

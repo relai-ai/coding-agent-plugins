@@ -23,8 +23,20 @@ runner code without a `catalog.json` or a directory with an invalid name, are
 not adapters: commands that scan every adapter skip them with a warning, and
 skip names starting with `.` silently.
 The commands are not run through a shell and need no Python runtime unless the
-adapter uses Python. A compiled runner can use `prepare` to build a binary and
-`runner` to invoke it, for example:
+adapter uses Python. For Python, select the project's environment explicitly;
+bare `python3` selects the first host interpreter on `PATH`. For example:
+
+```json
+{
+  "prepare": ["uv", "sync", "--locked"],
+  "runner": ["uv", "run", "--locked", "python", ".relai/custom-adaptor/example/run.py"]
+}
+```
+
+Track the lockfile and dependency metadata. Optimization runs `prepare` in its
+worktree, which does not inherit an ignored virtual environment or build
+artifact from the source checkout. A compiled runner can use `prepare` to build
+a binary and `runner` to invoke it, for example:
 
 ```json
 {
@@ -33,16 +45,15 @@ adapter uses Python. A compiled runner can use `prepare` to build a binary and
 }
 ```
 
-The host needs the chosen toolchain. Optimization runs `prepare` in its
-worktree, building against the candidate revision; do not assume ignored local
-build artifacts are copied. Use the platform's executable path and satisfy the
-same `--task-id`/`--output` and JSON contract for every language.
+The host needs the chosen environment manager or toolchain. Use the platform's
+executable path and satisfy the same `--task-id`/`--output` and JSON contract
+for every language.
 
 ```json
 {
   "schema_version": "relai.custom_adapter.v1",
-  "prepare": ["python3", ".relai/custom-adaptor/example/prepare.py"],
-  "runner": ["python3", ".relai/custom-adaptor/example/run.py"],
+  "prepare": ["uv", "sync", "--locked"],
+  "runner": ["uv", "run", "--locked", "python", ".relai/custom-adaptor/example/run.py"],
   "tasks": [{
     "id": "request/create",
     "tags": ["request.create", "request-workflow", "smoke"],
@@ -111,12 +122,66 @@ other value, such as a message string or `true`, also reports a failure.
 `evaluation_errors` may carry diagnostic IDs outside the catalog but require
 `failure`; partial scored evaluations remain evidence and the run stays
 unscored during optimization. A validated execution failure without evaluator
-errors scores zero. A nonzero runner exit is recorded as a task failure but
-remains unscored because it does not establish which component failed.
+errors scores zero in full optimization; fast optimization rejects it as
+non-comparable evidence and leaves the sample unverified. A nonzero runner exit
+is recorded as a task failure but remains unscored because it does not establish
+which component failed.
 Missing runtime requirements still stop
 optimization for correction.
 
+Classify failures by the evidence the runner has. A non-null `failure` without
+evaluator errors says the target execution failed. Full optimization scores
+that verdict zero; fast optimization treats it as non-comparable evidence and
+leaves the sample unverified. Add `evaluation_errors` when grading failed; that
+keeps the run unscored even when it contains partial scored evaluations. Exit
+nonzero when the runner cannot establish which component failed; that also
+remains unscored. Invalid JSON, a missing executable, and a missing runtime
+requirement stop the workflow for correction rather than becoming agent
+verdicts.
+
+Target failure:
+
+```json
+{"schema_version":"relai.custom_run.v1","task_id":"request/create","trace":{"steps":[{"step_id":1,"source":"agent","message":"Request failed"}]},"failure":{"message":"The target agent could not complete the request"}}
+```
+
+Grader failure:
+
+```json
+{"schema_version":"relai.custom_run.v1","task_id":"request/create","trace":{"steps":[{"step_id":1,"source":"agent","message":"Done"}]},"failure":{"message":"A grader failed"},"evaluations":[{"evaluator_id":"correctness","score":1,"feedback":"Passed"}],"evaluation_errors":[{"evaluator_id":"quality","message":"The grading service was unavailable"}]}
+```
+
 ## Selection and outputs
+
+Validate a fresh execution with
+`relai custom-adapter validate run --custom-tests 'example::request/create'`,
+or select tasks with `--custom-tags`. This runs `prepare` and the selected
+runner commands, so the target and its tools retain their normal costs and
+external side effects. Use a narrow selector and a safe target environment;
+pass runtime values with `--env-file` or `--env`. RELAI applies the same catalog,
+result, scoring, failure, and trajectory checks used by simulation and then, by
+default, asks a model to review relevant adapter source and the freshly redacted
+trajectory for evidence-quality concerns. Model findings are advisory. If model
+access is unavailable, report the AI review as incomplete while retaining the
+deterministic findings. `--offline` intentionally skips AI review.
+
+Inspect an existing simulation result or suite without executing tasks with
+`relai custom-adapter validate results PATH`. Saved results do not bind their
+catalog or source revision, so RELAI checks them against the current checkout
+and warns that provenance is unverified. An embedded structured trajectory must
+use `ATIF-v1.7` and contain a `steps` array; reject malformed embedded evidence
+as a hard validation error. Before sending valid saved evidence to the model,
+RELAI reapplies the current checkout's runtime redaction, including
+secret-shaped fields and values known through the current runtime environment.
+It cannot guarantee removal of a historical secret that the current runtime
+configuration no longer identifies. Ask the user to review saved evidence when
+its earlier environment may have contained other sensitive values.
+
+A compatible legacy result may omit embedded structured trajectory evidence.
+Continue its deterministic score checks and source review, but report that
+trajectory-quality review is unavailable and the AI review is incomplete. Use
+`validate run` to produce fresh evidence under the current configuration.
+`results PATH --offline` runs only deterministic checks.
 
 Use `--custom-tests 'example::request/create'`,
 `--custom-tags 'example::request.create'` for one task,
